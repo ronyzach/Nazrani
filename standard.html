@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="page-head" aria-labelledby="page-title">
+    <div class="container" id="page-head"></div>
+  </section>
+  <section class="standard" aria-labelledby="standard-aside-title">
+    <div class="container grid" id="standard-grid"></div>
+  </section>
+  <section class="founder" aria-labelledby="founder-eyebrow">
+    <div class="container" id="founder-body"></div>
+  </section>
+  <section class="promise" aria-labelledby="promise-title">
+    <div class="container grid" id="promise-grid"></div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  Nazrani.init({ active: 'standard', pageId: 'standard' });
+  const C = DATA.copy.pages.standard;
+  const esc = Nazrani.esc;
+
+  document.getElementById('page-head').innerHTML = `
+    <div class="crumbs"><a href="index.html">Home</a> · ${esc(C.crumbs)}</div>
+    <h1 id="page-title">${esc(C.titleA)}<span class="accent">${esc(C.titleB)}</span></h1>
+    <p class="lede">${esc(C.lede)}</p>`;
+
+  const std = await DataService.getStandard();
+  document.getElementById('standard-grid').innerHTML = `
+    <div class="lhs">
+      <div class="eyebrow">${esc(C.aside.eyebrow)}</div>
+      <h2 id="standard-aside-title">${esc(C.aside.titleA)}<span class="serif-i accent">${esc(C.aside.titleB)}</span></h2>
+      <p>${esc(C.aside.body)}</p>
+      <a href="${C.aside.cta.href}" class="btn btn-light">${esc(C.aside.cta.label)}</a>
+    </div>
+    <ol id="standard-list">
+      ${std.map(s => `<li>
+        <div class="n">N° ${esc(s.n)}</div>
+        <div>
+          <div class="t">${esc(s.t)}</div>
+          <div class="d">${esc(s.d)}</div>
+          ${s.long ? '<div class="long">' + esc(s.long) + '</div>' : ''}
+        </div>
+      </li>`).join('')}
+    </ol>`;
+
+  document.getElementById('founder-body').innerHTML = `
+    <div class="head"><div class="eyebrow" id="founder-eyebrow">${esc(C.founder.eyebrow)}</div></div>
+    <blockquote>
+      <div class="quote"><span class="accent">"</span>${C.founder.quote}<span class="accent">"</span></div>
+    </blockquote>`;
+
+  document.getElementById('promise-grid').innerHTML = `
+    <div>
+      <div class="eyebrow">${esc(C.promise.eyebrow)}</div>
+      <h2 id="promise-title">${esc(C.promise.titleA)}<span class="serif-i">${esc(C.promise.titleB)}</span></h2>
+    </div>
+    <div>
+      <a href="${C.promise.cta.href}" class="btn btn-ghost">${esc(C.promise.cta.label)}</a>
+    </div>`;
+})();
+</script>
+</body>
+</html>

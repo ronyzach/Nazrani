@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="page-head" aria-labelledby="page-title">
+    <div class="container" id="page-head"></div>
+  </section>
+  <section class="journal" style="padding-top:50px;">
+    <div class="container">
+      <div class="journal-grid" id="journal-grid" role="list"></div>
+    </div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  Nazrani.init({ active: 'journal', pageId: 'journal' });
+  var C = DATA.copy.pages.journal;
+  var esc = Nazrani.esc;
+  document.getElementById('page-head').innerHTML =
+    '<div class="crumbs"><a href="index.html">Home</a> &middot; ' + esc(C.crumbs) + '</div>' +
+    '<h1 id="page-title">' + esc(C.titleA) + '<span class="accent">' + esc(C.titleB) + '</span></h1>' +
+    '<p class="lede">' + esc(C.lede) + '</p>';
+
+  DataService.getJournal().then(function (list) {
+    document.getElementById('journal-grid').innerHTML = list.map(function (j) {
+      return '<a href="article.html?slug=' + j.slug + '" class="j-card" role="listitem">' +
+        '<div class="placeholder has-image ph-img">' +
+          '<img class="cover" src="' + j.image + '" alt="' + esc(j.title) + '" loading="lazy"/>' +
+        '</div>' +
+        '<div>' +
+          '<div class="meta-row">' +
+            '<span class="tag-mono">' + esc(j.tag) + '</span>' +
+            '<span class="date">' + esc(j.date) + ' &middot; ' + esc(j.read) + '</span>' +
+          '</div>' +
+          '<div class="title">' + esc(j.title) + '</div>' +
+          '<div class="excerpt">' + esc(j.excerpt || '') + '</div>' +
+        '</div>' +
+      '</a>';
+    }).join('');
+  });
+})();
+</script>
+
+</body>
+</html>

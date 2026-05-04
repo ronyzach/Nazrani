@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="pdp" aria-labelledby="pdp-title">
+    <div class="container">
+      <div class="crumbs" id="crumbs" style="font-family:var(--mono);font-size:9px;letter-spacing:0.16em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:24px;"></div>
+      <div id="pdp-body"></div>
+    </div>
+  </section>
+
+  <section class="related" id="related-wrap" style="display:none;" aria-labelledby="related-title">
+    <div class="container">
+      <div class="head" id="related-head"></div>
+      <div class="product-grid" id="related-grid" role="list"></div>
+    </div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/illustrations.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  Nazrani.init({ active: 'shop', pageId: 'product' });
+  const C = DATA.copy.pages.product;
+  const esc = Nazrani.esc, tpl = Nazrani.tpl;
+
+  const id = new URLSearchParams(location.search).get('id') || (DATA.products[0] && DATA.products[0].id);
+  const product = await DataService.getProduct(id);
+
+  const body = document.getElementById('pdp-body');
+  if (!product) {
+    document.getElementById('crumbs').innerHTML = '<a href="index.html">Home</a> · <a href="shop.html">Catalogue</a>';
+    body.innerHTML = `<div style="padding:80px 0;text-align:center;">
+      <h1 style="font-family:var(--serif);">${esc(C.notFoundTitle)}</h1>
+      <p style="color:var(--ink-soft);margin:14px 0 22px;">${esc(C.notFoundBody)}</p>
+      <a href="shop.html" class="btn btn-ghost">${esc(DATA.copy.ui.backToShop)}</a>
+    </div>`;
+    return;
+  }
+
+  document.title = product.name + ' · ' + DATA.brand.name + ' ' + DATA.brand.qualifier;
+  document.getElementById('crumbs').innerHTML = `<a href="index.html">Home</a> · <a href="shop.html">Catalogue</a> · ${esc(product.category)}`;
+
+  const hasImg = !!product.image;
+  const media = hasImg
+    ? `<img class="cover" src="${product.image}" alt="${esc(product.name)}" loading="eager"/>
+       <div aria-hidden="true" data-overlay class="img-overlay"></div>`
+    : (typeof productIllustration === 'function' ? productIllustration(product.id) : '');
+
+  body.innerHTML = `
+    <div class="grid">
+      <div class="gallery">
+        <div class="placeholder${hasImg ? ' has-image' : ''}" style="aspect-ratio:1/1;">${media}</div>
+      </div>
+      <div class="details">
+        <div class="meta-rail">
+          ${product.gi ? '<span class="tag tag-gold">GI · ' + esc(product.origin) + '</span>' : ''}
+          <span class="tag tag-green">${esc(product.organic)}</span>
+          <span class="tag">${esc(product.category)}</span>
+        </div>
+        <h1 id="pdp-title">${esc(product.name)}</h1>
+        <div class="sub">${esc(product.subtitle)}</div>
+        <div class="lot-row">
+          <span>LOT · ${esc(product.lot)}</span>
+          <span>${esc(product.origin)} · harvested ${esc(product.harvested || '')}</span>
+          <span class="stock">● in stock</span>
+        </div>
+        <div class="price-row">
+          <span class="price">${Nazrani.rupee(product.price)}</span>
+          <span class="wt">${esc(product.weight)}</span>
+        </div>
+        <div class="qty-cart">
+          <div class="qty-stepper">
+            <button data-step="-1" type="button" aria-label="Decrease quantity">−</button>
+            <input id="qty" type="number" value="1" min="1" max="${DATA.config.cartLimit}" aria-label="Quantity"/>
+            <button data-step="+1" type="button" aria-label="Increase quantity">+</button>
+          </div>
+          <button class="add-cart-btn" id="add-cart" type="button">${esc(tpl(C.ctaTemplate, { weight: product.weight }))}</button>
+        </div>
+
+        <div class="story-box">
+          <h3>${esc(C.storyHeading)}</h3>
+          <p>${esc(product.story || '')}</p>
+          <ul class="notes">
+            ${(product.notes || []).map(n => '<li>' + esc(n) + '</li>').join('')}
+          </ul>
+        </div>
+
+        <div class="story-box">
+          <h3>${esc(C.specHeading)}</h3>
+          <div class="spec-grid">
+            ${Object.keys(product.spec || {}).map(k =>
+              '<div class="cell"><div class="k">' + esc(k) + '</div><div class="v">' + esc(product.spec[k]) + '</div></div>'
+            ).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  const qtyEl = document.getElementById('qty');
+  document.querySelectorAll('[data-step]').forEach(b => {
+    b.addEventListener('click', () => {
+      const step = parseInt(b.dataset.step, 10);
+      const next = Math.max(1, Math.min(DATA.config.cartLimit, parseInt(qtyEl.value, 10) + step));
+      qtyEl.value = next;
+    });
+  });
+  document.getElementById('add-cart').addEventListener('click', function () {
+    const q = Math.max(1, parseInt(qtyEl.value, 10) || 1);
+    DataService.addToCart(product.id, q);
+    this.classList.add('added');
+    this.textContent = tpl(C.addedTemplate, { qty: q });
+    Nazrani.showToast(product.name + ' × ' + q + (DATA.copy.ui.toast.addedSuffix || ''));
+    setTimeout(() => {
+      this.classList.remove('added');
+      this.textContent = tpl(C.ctaTemplate, { weight: product.weight });
+    }, 2200);
+  });
+
+  const related = await DataService.getRelated(product.id, 4);
+  if (related.length) {
+    document.getElementById('related-wrap').style.display = '';
+    document.getElementById('related-head').innerHTML = `
+      <div class="eyebrow">${esc(C.relatedEyebrow)}</div>
+      <h3 id="related-title">${esc(C.relatedTitle)}</h3>`;
+    const grid = document.getElementById('related-grid');
+    grid.innerHTML = related.map(Nazrani.productCardHTML).join('');
+    Nazrani.wireAddToCart(grid);
+  }
+})();
+</script>
+
+</body>
+</html>

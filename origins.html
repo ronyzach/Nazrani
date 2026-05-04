@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="page-head" aria-labelledby="page-title">
+    <div class="container" id="page-head"></div>
+  </section>
+  <section class="prov" style="border-bottom:none;" aria-labelledby="prov-title">
+    <div class="container grid" id="prov-grid"></div>
+  </section>
+  <section class="standard" style="padding:60px 0;" aria-labelledby="onb-title">
+    <div class="container" id="onboarding"></div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  Nazrani.init({ active: 'origins', pageId: 'origins' });
+  const C = DATA.copy.pages.origins;
+  const esc = Nazrani.esc, pad2 = Nazrani.pad2;
+
+  document.getElementById('page-head').innerHTML = `
+    <div class="crumbs"><a href="index.html">Home</a> · ${esc(C.crumbs)}</div>
+    <h1 id="page-title">${esc(C.titleA)}<span class="accent">${esc(C.titleB)}</span></h1>
+    <p class="lede">${esc(C.lede)}</p>`;
+
+  const provHome = DATA.copy.pages.home.provenance;
+  document.getElementById('prov-grid').innerHTML = `
+    <div>
+      <div class="eyebrow">${esc(C.partners.eyebrow)}</div>
+      <h2 id="prov-title">${esc(C.partners.titleA)}<span class="serif-i">${esc(C.partners.titleB)}</span></h2>
+      <p class="lede">${C.partners.lede}</p>
+      <ul id="prov-list" aria-label="Origins"></ul>
+    </div>
+    <div class="prov-map" id="prov-map" aria-hidden="true">
+      <svg class="shape" viewBox="0 0 100 120" preserveAspectRatio="none">
+        <path d="M 30 5 Q 18 18 22 32 Q 16 42 24 55 Q 14 70 26 82 Q 22 95 35 105 Q 48 110 58 100 Q 68 92 64 78 Q 74 68 68 55 Q 78 42 70 28 Q 72 15 58 8 Q 44 2 30 5 Z" fill="rgba(44,82,57,0.08)" stroke="rgba(44,82,57,0.35)" stroke-width="0.4"/>
+      </svg>
+      <div class="stamp">${esc(provHome.stamp)}</div>
+      <div class="compass"><div>${esc(provHome.compass.n)}</div><div class="needle"></div><div>${esc(provHome.compass.s)}</div></div>
+    </div>`;
+
+  const prov = await DataService.getProvenance();
+  const provListEl = document.getElementById('prov-list');
+  const provMapEl  = document.getElementById('prov-map');
+  let provHover = 0;
+
+  function renderProvList() {
+    provListEl.innerHTML = prov.map((p, i) => `
+      <li class="${i === provHover ? 'on' : ''}" data-i="${i}">
+        <span class="num">${pad2(i + 1)}</span>
+        <div>
+          <div class="name">${esc(p.name)}</div>
+          <div class="what">${esc(p.what)}</div>
+          <div class="alt">${esc(p.partner || '')} · ${esc(p.altitude || '')}</div>
+        </div>
+        <span class="arr">→</span>
+      </li>`).join('');
+  }
+  function renderProvPins() {
+    provMapEl.querySelectorAll('.pin').forEach(n => n.remove());
+    prov.forEach((p, i) => {
+      const pin = document.createElement('div');
+      pin.className = 'pin' + (i === provHover ? ' on' : '');
+      pin.style.left = p.x + '%';
+      pin.style.top  = p.y + '%';
+      pin.dataset.i  = i;
+      pin.innerHTML  = '<div class="dot"></div><div class="label">' + esc(p.name) + '</div>';
+      provMapEl.appendChild(pin);
+    });
+  }
+  renderProvList(); renderProvPins();
+
+  function setProvHover(i) {
+    provHover = i;
+    provListEl.querySelectorAll('li').forEach((li, idx) => li.classList.toggle('on', idx === i));
+    provMapEl.querySelectorAll('.pin').forEach((pin, idx) => pin.classList.toggle('on', idx === i));
+  }
+  provListEl.addEventListener('mouseover', e => {
+    const li = e.target.closest('li[data-i]'); if (li) setProvHover(parseInt(li.dataset.i, 10));
+  });
+  provMapEl.addEventListener('mouseover', e => {
+    const pin = e.target.closest('.pin[data-i]'); if (pin) setProvHover(parseInt(pin.dataset.i, 10));
+  });
+
+  document.getElementById('onboarding').innerHTML = `
+    <div class="eyebrow" style="color:var(--gold-soft);text-align:center;">${esc(C.onboarding.eyebrow)}</div>
+    <h2 id="onb-title" style="font-family:var(--serif);font-weight:400;font-size:clamp(22px,2.4vw,30px);line-height:1.1;text-align:center;margin:14px auto 32px;max-width:640px;">${esc(C.onboarding.title)}</h2>
+    <ol style="max-width:760px;margin:0 auto;">
+      ${C.onboarding.steps.map(s => `<li>
+        <div class="n">${esc(s.n)}</div>
+        <div><div class="t">${esc(s.t)}</div><div class="d">${esc(s.d)}</div></div>
+      </li>`).join('')}
+    </ol>`;
+})();
+</script>
+</body>
+</html>

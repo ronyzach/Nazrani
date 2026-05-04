@@ -1,0 +1,8 @@
+[
+  { "name": "Wayanad",    "what": "Pepper, chyawanprash, wild honey", "x": 22, "y": 38, "partner": "Vanamoolika Cooperative", "altitude": "800–950 m" },
+  { "name": "Idukki",     "what": "Green cardamom, cloves",           "x": 32, "y": 62, "partner": "Vandanmedu Estate Group",  "altitude": "1,100–1,300 m" },
+  { "name": "Marayoor",   "what": "Unrefined cane jaggery",           "x": 28, "y": 50, "partner": "Marayoor Cane Society",   "altitude": "1,000 m" },
+  { "name": "Palakkad",   "what": "Red Matta heirloom rice",          "x": 44, "y": 35, "partner": "Pollachi Block Farmers",  "altitude": "150 m" },
+  { "name": "Coonoor",    "what": "High-grown orthodox tea",          "x": 52, "y": 48, "partner": "Single Estate, Coonoor",  "altitude": "1,800 m" },
+  { "name": "Kottayam",   "what": "Founding HQ & dispatch",           "x": 60, "y": 30, "partner": "Nazrani Heritage HQ",     "altitude": "3 m" }
+]

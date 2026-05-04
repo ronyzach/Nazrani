@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="notfound" aria-labelledby="nf-title">
+    <div class="container" id="nf-body"></div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  Nazrani.init({ active: '', pageId: 'notfound' });
+  var C = DATA.copy.pages.notfound;
+  var esc = Nazrani.esc;
+  var ctas = C.ctas.map(function (a) {
+    return '<a href="' + a.href + '" class="btn ' +
+      (a.kind === 'primary' ? 'btn-primary' : 'btn-ghost') + '">' + esc(a.label) + '</a>';
+  }).join('');
+  document.getElementById('nf-body').innerHTML =
+    '<div class="code">' + esc(C.code) + '</div>' +
+    '<h1 id="nf-title">' + esc(C.title) + '</h1>' +
+    '<p>' + esc(C.body) + '</p>' +
+    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' + ctas + '</div>';
+})();
+</script>
+
+</body>
+</html>

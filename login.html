@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="page-head" aria-labelledby="page-title">
+    <div class="container" id="page-head"></div>
+  </section>
+  <section class="login-section">
+    <div class="container">
+      <div class="login-card" id="login-card"></div>
+    </div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  const USER_KEY = 'nazrani:user:v1';
+  Nazrani.init({ active: '', pageId: 'login' });
+  const C   = DATA.copy.pages.login;
+  const esc = Nazrani.esc;
+
+  const fromCart = (new URLSearchParams(location.search).get('next') || '').includes('checkout');
+  const crumbMid = fromCart ? ' · <a href="cart.html">Cart</a>' : '';
+
+  document.getElementById('page-head').innerHTML = `
+    <div class="crumbs"><a href="index.html">Home</a>${crumbMid} · ${esc(C.crumbs)}</div>
+    <h1 id="page-title">${esc(C.titleA)}<span class="accent">${esc(C.titleB)}</span></h1>
+    <p class="lede">${esc(C.subtitle)}</p>`;
+
+  document.getElementById('login-card').innerHTML = `
+    <div class="social-btns">
+      <button class="social-btn" id="btn-google" type="button">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616Z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
+          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
+        </svg>
+        ${esc(C.googleCta)}
+      </button>
+      <button class="social-btn" id="btn-facebook" type="button">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <rect width="18" height="18" rx="3" fill="#1877F2"/>
+          <path d="M12.5 9H10.5V16H7.5V9H6V6.5H7.5V5C7.5 3.34 8.34 2 10.5 2H12.5V4.5H11.25C10.7 4.5 10.5 4.7 10.5 5.25V6.5H12.5L12.5 9Z" fill="white"/>
+        </svg>
+        ${esc(C.facebookCta)}
+      </button>
+    </div>
+
+    <div class="login-divider"><span>${esc(C.divider)}</span></div>
+
+    <button class="btn btn-ghost login-guest-btn" id="btn-guest" type="button">${esc(C.guestCta)}</button>
+    <p class="login-guest-note">${esc(C.guestNote)}</p>`;
+
+  function dest() {
+    const p = new URLSearchParams(location.search).get('next') || 'checkout.html';
+    return p.endsWith('.html') ? p : p + '.html';
+  }
+
+  function signIn(provider, name, email) {
+    localStorage.setItem(USER_KEY, JSON.stringify({ provider, name, email, guest: false }));
+    location.href = dest();
+  }
+
+  document.getElementById('btn-google').addEventListener('click', () =>
+    signIn('google', 'Demo User', 'demo@gmail.com'));
+
+  document.getElementById('btn-facebook').addEventListener('click', () =>
+    signIn('facebook', 'Demo User', 'demo@facebook.com'));
+
+  document.getElementById('btn-guest').addEventListener('click', () => {
+    localStorage.setItem(USER_KEY, JSON.stringify({ guest: true }));
+    location.href = dest();
+  });
+})();
+</script>
+</body>
+</html>

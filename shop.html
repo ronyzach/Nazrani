@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="page-head" aria-labelledby="page-title">
+    <div class="container" id="page-head"></div>
+  </section>
+
+  <section>
+    <div class="container shop-layout">
+      <aside class="shop-side" id="shop-side" aria-label="Filters"></aside>
+      <div class="shop-main">
+        <div class="shop-toolbar">
+          <div class="count" id="result-count" aria-live="polite">·</div>
+          <label class="visually-hidden" for="sort-by">Sort by</label>
+          <select id="sort-by"></select>
+        </div>
+        <div class="product-grid" id="product-grid" role="list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/illustrations.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  Nazrani.init({ active: 'shop', pageId: 'shop' });
+  const C = DATA.copy.pages.shop;
+  const esc = Nazrani.esc;
+
+  document.getElementById('page-head').innerHTML = `
+    <div class="crumbs"><a href="index.html">Home</a> · ${esc(C.crumbs)}</div>
+    <h1 id="page-title">${esc(C.titleA)}<span class="accent">${esc(C.titleB)}</span></h1>
+    <p class="lede">${esc(C.lede)}</p>`;
+
+  const qs = new URLSearchParams(location.search);
+  let activeCat  = qs.get('cat')  || 'All';
+  let activeSort = qs.get('sort') || 'default';
+
+  const cats = await DataService.getCategories();
+  const all  = await DataService.getProducts({});
+
+  const sideCats = document.getElementById('shop-side');
+  sideCats.innerHTML = `
+    <h4>${esc(C.sidebar.categoriesHeader)}</h4>
+    <ul id="side-cats">
+      <li class="${activeCat === 'All' ? 'active' : ''}" data-cat="All">
+        <span>${esc(C.sidebar.allLabel)}</span><span class="ct">${all.length}</span>
+      </li>
+      ${cats.map(c => `<li class="${c.name === activeCat ? 'active' : ''}" data-cat="${esc(c.name)}">
+        <span>${esc(c.name)}</span><span class="ct">${c.count}</span>
+      </li>`).join('')}
+    </ul>
+    <h4>${esc(C.sidebar.sourcingHeader)}</h4>
+    <ul>
+      ${C.sidebar.sourcing.map(s => `<li><span>${esc(s.label)}</span><span class="ct">${esc(s.ct)}</span></li>`).join('')}
+    </ul>`;
+
+  const sortEl = document.getElementById('sort-by');
+  sortEl.innerHTML = DATA.config.sortModes.map(s =>
+    `<option value="${s.id}"${s.id === activeSort ? ' selected' : ''}>${esc(s.label)}</option>`
+  ).join('');
+
+  const sideUl = document.getElementById('side-cats');
+  sideUl.addEventListener('click', e => {
+    const li = e.target.closest('li[data-cat]');
+    if (!li) return;
+    activeCat = li.dataset.cat;
+    sideUl.querySelectorAll('li').forEach(x => x.classList.toggle('active', x.dataset.cat === activeCat));
+    sync(); render();
+  });
+  sortEl.addEventListener('change', e => { activeSort = e.target.value; sync(); render(); });
+
+  function sync() {
+    const params = new URLSearchParams();
+    if (activeCat  && activeCat  !== 'All')     params.set('cat',  activeCat);
+    if (activeSort && activeSort !== 'default') params.set('sort', activeSort);
+    history.replaceState(null, '', location.pathname + (params.toString() ? ('?' + params.toString()) : ''));
+  }
+
+  const grid = document.getElementById('product-grid');
+  Nazrani.wireAddToCart(grid);
+
+  async function render() {
+    const list = await DataService.getProducts({
+      category: activeCat,
+      sort: activeSort === 'default' ? null : activeSort
+    });
+    document.getElementById('result-count').textContent =
+      list.length + ' ' + (list.length === 1 ? 'PRODUCT' : 'PRODUCTS') +
+      (activeCat !== 'All' ? ' · ' + activeCat.toUpperCase() : '');
+    if (!list.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--ink-muted);font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;">' + esc(C.empty) + '</div>';
+      return;
+    }
+    grid.innerHTML = list.map(Nazrani.productCardHTML).join('');
+  }
+  render();
+})();
+</script>
+</body>
+</html>

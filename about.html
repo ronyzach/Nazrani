@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="page-head" aria-labelledby="page-title">
+    <div class="container" id="page-head"></div>
+  </section>
+
+  <section id="story" class="story" aria-labelledby="story-title">
+    <div class="container grid" id="story-grid"></div>
+  </section>
+
+  <section class="founder" aria-labelledby="founder-eyebrow">
+    <div class="container" id="founder-body"></div>
+  </section>
+
+  <section class="categories" aria-labelledby="next-title">
+    <div class="container">
+      <div class="head" id="next-head"></div>
+      <div class="cat-grid" id="next-grid"></div>
+    </div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  Nazrani.init({ active: 'about', pageId: 'about' });
+  const A = DATA.copy.pages.about;
+  const H = DATA.copy.pages.home;
+  const esc = Nazrani.esc, pad2 = Nazrani.pad2;
+
+  // -------- PAGE HEAD -----------------------------------------------------
+  document.getElementById('page-head').innerHTML = `
+    <div class="crumbs"><a href="index.html">Home</a> · ${esc(A.crumbs)}</div>
+    <h1 id="page-title">${esc(A.titleA)}<span class="accent">${esc(A.titleB)}</span></h1>
+    <p class="lede">${esc(A.lede)}</p>`;
+
+  // -------- STORY (long form) --------------------------------------------
+  document.getElementById('story-grid').innerHTML = `
+    <div>
+      <div class="eyebrow">${esc(H.story.eyebrow)}</div>
+      <h2 id="story-title">${esc(H.story.titleA)}<span class="serif-i">${esc(H.story.titleB)}</span></h2>
+      <div class="timeline"><div class="t">${esc(H.story.timeline)}</div></div>
+      <div class="tags">
+        ${H.story.tags.map(t => `<span class="tag tag-${t.tone}">${esc(t.label)}</span>`).join('')}
+      </div>
+    </div>
+    <div class="col-r">
+      <p class="lede">${H.story.lede}</p>
+      ${H.story.paragraphs.map(p => '<p>' + esc(p) + '</p>').join('')}
+      <a href="${H.story.cta.href}" class="more">${esc(H.story.cta.label)}</a>
+    </div>`;
+
+  // -------- FOUNDER -------------------------------------------------------
+  document.getElementById('founder-body').innerHTML = `
+    <div class="head"><div class="eyebrow" id="founder-eyebrow">${esc(H.founder.eyebrow)}</div></div>
+    <blockquote>
+      <div class="quote"><span class="accent">"</span>${H.founder.quote}<span class="accent">"</span></div>
+    </blockquote>
+    <div class="credit">
+      <div class="avatar"><img src="${H.founder.avatar}" alt="${esc(H.founder.avatarAlt)}" loading="lazy"/></div>
+      <div>
+        <div class="name">${esc(H.founder.name)}</div>
+        <div class="role">${esc(H.founder.role)}</div>
+      </div>
+    </div>`;
+
+  // -------- WHERE TO GO NEXT ---------------------------------------------
+  document.getElementById('next-head').innerHTML = `
+    <div>
+      <div class="eyebrow">${esc(A.next.eyebrow)}</div>
+      <h2 id="next-title">${esc(A.next.titleA)}<span class="serif-i">${esc(A.next.titleB)}</span></h2>
+    </div>`;
+
+  document.getElementById('next-grid').innerHTML = A.next.tiles.map((t, i) => `
+    <a href="${t.href}" class="catcard" aria-label="${esc(t.name)} — ${esc(t.cta)}">
+      <div class="meta">${pad2(i + 1)} · ${esc(t.name).toUpperCase()}</div>
+      <div class="body">
+        <div class="name">${esc(t.name)}</div>
+        <div class="desc">${esc(t.desc)}</div>
+      </div>
+      <div class="cta">${esc(t.cta)} <span class="arr">→</span></div>
+    </a>`).join('');
+})();
+</script>
+</body>
+</html>

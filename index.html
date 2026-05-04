@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="hero" id="hero" aria-labelledby="hero-title">
+    <div aria-hidden="true" class="bg"></div>
+    <div class="container grid" id="hero-grid"></div>
+  </section>
+
+  <section id="story" class="story" aria-labelledby="story-title">
+    <div class="container grid" id="story-grid"></div>
+  </section>
+
+  <section class="categories" aria-labelledby="explore-title">
+    <div class="container">
+      <div class="head" id="explore-head"></div>
+      <div class="cat-grid" id="explore-grid"></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/illustrations.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  Nazrani.init({ active: '', pageId: 'home' });
+  const C = DATA.copy.pages.home;
+  const esc = Nazrani.esc, pad2 = Nazrani.pad2;
+
+  // -------- HERO ----------------------------------------------------------
+  document.getElementById('hero-grid').innerHTML = `
+    <div>
+      <div class="eyebrow"><span class="stem">${esc(C.hero.eyebrow)}</span></div>
+      <h1 id="hero-title">${esc(C.hero.titleA)}<br/><span class="serif-i accent">${esc(C.hero.titleB)}</span>${esc(C.hero.titleC)}</h1>
+      <p class="lede">${esc(C.hero.lede)}</p>
+      <div class="cta">
+        <a href="${C.hero.ctaPrimary.href}" class="btn primary">${esc(C.hero.ctaPrimary.label)}</a>
+        <a href="${C.hero.ctaGhost.href}" class="btn btn-light">${esc(C.hero.ctaGhost.label)}</a>
+      </div>
+      <div class="trust">
+        ${C.hero.trust.map(t => `<div><div class="n">${esc(t.n)}</div><div class="l">${esc(t.l)}</div></div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="hero-card">
+        <div class="placeholder dark has-image ph-img">
+          <img class="cover" src="${C.hero.card.image}" alt="${esc(C.hero.card.alt)}" loading="eager"/>
+          <div aria-hidden="true" data-overlay class="overlay"></div>
+          <div class="topbar">
+            <div class="top">
+              <span class="tag gi">${esc(C.hero.card.tag)}</span>
+              <div class="lot">LOT N°<br/>${esc(C.hero.card.lotLine)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="caption">
+          <span class="meta">${esc(C.hero.card.meta)}</span>
+          <span class="feat">${esc(C.hero.card.feat)}</span>
+        </div>
+      </div>
+    </div>`;
+
+  // -------- STORY (short teaser; full story lives on about.html) ----------
+  document.getElementById('story-grid').innerHTML = `
+    <div>
+      <div class="eyebrow">${esc(C.story.eyebrow)}</div>
+      <h2 id="story-title">${esc(C.story.titleA)}<span class="serif-i">${esc(C.story.titleB)}</span></h2>
+      <div class="timeline"><div class="t">${esc(C.story.timeline)}</div></div>
+      <div class="tags">
+        ${C.story.tags.map(t => `<span class="tag tag-${t.tone}">${esc(t.label)}</span>`).join('')}
+      </div>
+    </div>
+    <div class="col-r">
+      <p class="lede">${C.story.lede}</p>
+      <a href="about.html" class="more">Read our full story →</a>
+    </div>`;
+
+  // -------- EXPLORE TILES -------------------------------------------------
+  document.getElementById('explore-head').innerHTML = `
+    <div>
+      <div class="eyebrow">${esc(C.explore.eyebrow)}</div>
+      <h2 id="explore-title">${esc(C.explore.titleA)}<span class="serif-i">${esc(C.explore.titleB)}</span></h2>
+    </div>`;
+
+  document.getElementById('explore-grid').innerHTML = C.explore.tiles.map((t, i) => `
+    <a href="${t.href}" class="catcard" aria-label="${esc(t.name)} — ${esc(t.cta)}">
+      <div class="meta">${pad2(i + 1)} · ${esc(t.name).toUpperCase()}</div>
+      <div class="body">
+        <div class="name">${esc(t.name)}</div>
+        <div class="desc">${esc(t.desc)}</div>
+      </div>
+      <div class="cta">${esc(t.cta)} <span class="arr">→</span></div>
+    </a>`).join('');
+
+})();
+</script>
+</body>
+</html>

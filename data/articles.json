@@ -1,0 +1,57 @@
+{
+  "morning-at-vanamoolika": {
+    "slug": "morning-at-vanamoolika",
+    "tag": "Field Notes",
+    "date": "02 May 2026",
+    "title": "A morning at the Vanamoolika cooperative",
+    "subtitle": "Six in the morning, the kashayam pots are already on.",
+    "read": "6 min",
+    "author": "Rony Zachariah",
+    "image": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1600&q=80",
+    "body": [
+      "Six in the morning, the kashayam pots are already on. The Vanamoolika courtyard smells of damp earth, wood-smoke, and the bittersweet steam of bilva and dashamoola simmering down. Suma chechi — head of preparations for twenty-three years — sets down a small steel tumbler and gestures for us to sit.",
+      "The first thing she will not show me is the clock. \"Some things finish when they finish,\" she says. The second is the recipe — fifty-eight pages, hand-written, kept in a cloth-bound ledger her teacher gave her. The third is the honey, which is not added today. The chyawanprash will be poured into clean glass jars at sundown, and the honey, two days later, when the conserve has cooled to skin temperature. Boiling honey, she explains, kills the work the bees have done.",
+      "I have come here twice a year for four years. Every visit, the cooperative looks slightly older — more rust on the iron pans, more chips on the courtyard tile. And every visit, the chyawanprash tastes the same. It should not surprise me by now, but it always does.",
+      "Around seven, the herb sorters arrive. Twelve women — three of them in their seventies — sit on woven mats with shallow brass trays. They pick stalks from leaves, sort by colour, and discard whatever is not exactly right. There is a rejection pile. It is large.",
+      "Vanamoolika does not run on volume. They run on the assumption that the next jar must be at least as good as the last one. That is the only standard they have ever recognised. When we approached them in 2023 about an ongoing supply agreement, Suma chechi listened to my proposal, asked four questions about minimum order quantities, and then asked the only one that mattered: \"You will not push us to make more than we can make properly?\"",
+      "I said no. She said come back in two weeks. We came back in two weeks.",
+      "By eleven the sun is high and the conserve is glassy. The cooks transfer the pots off the wood-fire onto the cooling rack. Somebody puts on the radio. A child runs through with a kite. The day is, in some sense, ordinary. In another sense, it is precisely the kind of day I wish more of our customers could see — the one in which a 2,000-year-old recipe is held together not by certificates, but by the conscience of twelve women on woven mats and the woman who will not let them rush."
+    ]
+  },
+  "publishing-failed-audits": {
+    "slug": "publishing-failed-audits",
+    "tag": "The Standard",
+    "date": "21 Apr 2026",
+    "title": "Why we publish every audit, even the failures",
+    "subtitle": "A failed audit isn't a marketing problem — it's a feature.",
+    "read": "4 min",
+    "author": "Rony Zachariah",
+    "image": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=1600&q=80",
+    "body": [
+      "In Q2 last year, a routine surprise audit of one of our cardamom partners turned up a moisture reading of 14% — three points above our internal ceiling. The lot was already packed for dispatch. We delisted it. The supplier was unhappy. So was our P&L.",
+      "We could have moved that lot. Most retailers would have. The numbers were within FSSAI norms; it would have shipped, and nobody outside our quality team would have known. But the Nazrani Sourcing Standard is not the FSSAI standard, and the gap between them is the entire point of what we are building.",
+      "So we published the audit. We named the lot, the partner, the reading, the action taken. The supplier, to his enormous credit, asked us to also publish his explanation — an unseasonal pre-monsoon shower had soaked an outdoor curing run. We did. The next month's lot, dried in our cost, came in at 10.2%. We re-listed.",
+      "Two principles are at work here. The first is that an audit you can hide is not an audit; it is theatre. The second is that suppliers are not adversaries — they are partners with their own pressures. Publishing an honest failure publicly tells our customers what we will not do, and tells our suppliers that we will not stab them in the back over a bad week.",
+      "We have published nine failures in the last two years. We have published thirty-one passes. The standard remains the standard."
+    ]
+  },
+  "name-worth-keeping": {
+    "slug": "name-worth-keeping",
+    "tag": "Heritage",
+    "date": "03 Apr 2026",
+    "title": "St. Thomas, the Malabar coast, and a name worth keeping",
+    "subtitle": "How a 2,000-year-old merchant identity became a quiet pact between buyer and seller.",
+    "read": "8 min",
+    "author": "Rony Zachariah",
+    "image": "https://images.unsplash.com/photo-1601000938259-9e92002320b2?auto=format&fit=crop&w=1600&q=80",
+    "body": [
+      "The word Nazrani comes from the Aramaic Naṣrāyā — followers of the Nazarene — and it travelled to the Malabar coast with the Apostle Thomas in 52 AD, or so the tradition holds. What it became, in Kerala over the centuries, was not principally a religious identity. It became a trading one.",
+      "Pre-modern Kerala's economy ran on long-distance trade. Spices moved north to the Mughal courts and west to the Levant. Pepper alone — black gold — funded fleets, wars, and the expansion of the Portuguese and the Dutch. The Malabar coast was, for two thousand years, one of the most cosmopolitan strips of land on earth.",
+      "Within that economy, the Nazranis occupied an unusual position. They were Christians in a Hindu-majority society with substantial Jewish and Muslim trading communities; they spoke Malayalam but were literate in Syriac; they had European connections but were unmistakably Indian. They could move between groups that did not always trade directly with one another.",
+      "What earned them their reputation, though, was a peculiar discipline around weights and descriptions. A Nazrani merchant, by repeated witness in Jewish, Arab, and Portuguese correspondence, would not sell short weight, would not adulterate, and would not — and this is the point that gets lost in the romanticism — undersell a customer who could be tricked. Goods passing through Nazrani hands were considered, by all sides, sound.",
+      "The reputation was not metaphysical. It was a slow accumulation of repeated, small, mundane decisions: this jar is honestly weighed, this lot is what the label says, this price is what we agreed. Over generations, those decisions hardened into an identity.",
+      "We are not pretending to inherit that identity by writing a website about it. Identities like that are not inherited; they are earned, lot by lot. But the name is a useful discipline. Every time we ship a product under it, we are answering a question that the Nazrani merchants of 1452 were also answering: would this be sound, by the lights of the people who came before us?",
+      "It is, in the end, the only question that has ever mattered in this business."
+    ]
+  }
+}

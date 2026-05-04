@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="confirm" aria-labelledby="confirm-title">
+    <div class="container" id="confirm-body"></div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/illustrations.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  Nazrani.init({ active: '', pageId: 'confirm' });
+  const C = DATA.copy.pages.confirm;
+  const esc = Nazrani.esc, tpl = Nazrani.tpl;
+  const id = new URLSearchParams(location.search).get('id');
+  const order = id ? DataService.getOrder(id) : null;
+  const body = document.getElementById('confirm-body');
+
+  if (!order) {
+    body.innerHTML = `
+      <div class="seal" aria-hidden="true">!</div>
+      <h1 id="confirm-title">${esc(C.notFoundTitle)}</h1>
+      <div class="order-id">${esc(C.notFoundBody)}</div>
+      <a href="index.html" class="btn btn-ghost">${esc(DATA.copy.ui.backToHome)}</a>`;
+    return;
+  }
+
+  const firstName = (order.customer.name || '').split(' ')[0] || 'friend';
+  const lines = order.items.map(it =>
+    '<div class="row"><span>' + esc(it.name) + ' × ' + it.qty + '</span><span>' + Nazrani.rupee(it.lineTotal) + '</span></div>'
+  ).join('');
+
+  const trackUrl = C.trackingUrl + '?awb=' + encodeURIComponent(order.airwayBillNo || '');
+
+  body.innerHTML = `
+    <div class="seal" aria-hidden="true">✓</div>
+    <h1 id="confirm-title">${esc(tpl(C.thanksTemplate, { name: firstName }))}</h1>
+    <p class="confirm-intro">${esc(tpl(C.intro, { email: order.customer.email }))}</p>
+    <div class="order-id">Order · ${esc(order.orderId)} · Estimated dispatch ${esc(order.estimatedDispatch)}</div>
+
+    <div class="ship-card">
+      <div class="ship-card-head">
+        <div class="eyebrow">${esc(C.shipmentHeading)}</div>
+        <div class="status-pill"><span class="dot"></span>Booked</div>
+      </div>
+      <div class="awb-row">
+        <div class="awb-label">${esc(C.awbLabel)}</div>
+        <div class="awb-no" title="Tap to copy" data-copy="${esc(order.airwayBillNo)}">${esc(order.airwayBillNo)}</div>
+      </div>
+      <div class="awb-meta">
+        <div><span class="k">${esc(C.carrierLabel)}</span><span class="v">${esc(C.carrierName)}</span></div>
+        <div><span class="k">Ship to</span><span class="v">${esc(order.address.city + ', ' + order.address.state + ' ' + order.address.pincode)}</span></div>
+      </div>
+      <div class="track-cta">
+        <div class="track-copy">
+          <strong>${esc(C.trackingHeading)}</strong>
+          <span>${esc(C.trackingBody)}</span>
+        </div>
+        <a href="${trackUrl}" target="_blank" rel="noopener" class="btn btn-primary track-btn">${esc(C.trackingCta)}</a>
+      </div>
+    </div>
+
+    <div class="recap">
+      <h3>Order summary</h3>
+      ${lines}
+      <div class="row"><span>Subtotal</span><span>${Nazrani.rupee(order.subtotal)}</span></div>
+      <div class="row"><span>Shipping</span><span>${order.shipping === 0 ? 'Free' : Nazrani.rupee(order.shipping)}</span></div>
+      <div class="row bold"><span>Total paid</span><span>${Nazrani.rupee(order.total)}</span></div>
+      <div class="row" style="margin-top:14px;"><span>Payment method</span><span>${esc((order.payment && order.payment.method || '').toUpperCase())}</span></div>
+      <div class="row"><span>Ship to</span><span>${esc(order.address.city + ', ' + order.address.state + ' ' + order.address.pincode)}</span></div>
+    </div>
+
+    <div class="actions">
+      <a href="shop.html" class="btn btn-primary">Continue shopping →</a>
+      <a href="index.html" class="btn btn-ghost">${esc(DATA.copy.ui.backToHome)}</a>
+    </div>`;
+
+  // Click-to-copy AWB
+  const awbEl = body.querySelector('.awb-no');
+  if (awbEl) awbEl.addEventListener('click', () => {
+    const v = awbEl.dataset.copy || awbEl.textContent;
+    if (navigator.clipboard) navigator.clipboard.writeText(v).then(() => Nazrani.showToast('Airway bill copied'));
+  });
+})();
+</script>
+</body>
+</html>

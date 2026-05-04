@@ -1,0 +1,32 @@
+[
+  {
+    "n": "01",
+    "t": "Origin & Provenance",
+    "d": "A single, named, verifiable point of origin — village or estate level. GI tagged where applicable.",
+    "long": "Every SKU lists a verifiable origin at the village or estate level. We refuse blends across origins, even where it would lower cost. Geographical Indication (GI) tags are honoured strictly — we will not list a product as Tellicherry Pepper or Marayoor Jaggery unless every gram in the lot has come from the protected region."
+  },
+  {
+    "n": "02",
+    "t": "Cultivation Practice",
+    "d": "No synthetic pesticides, herbicides, or chemical fertilisers. Soil and water records reviewed.",
+    "long": "Audited every harvest. We accept three certifications — India Organic (NPOP), PGS-India, and our own audit visit when a smallholder cannot afford certification but otherwise meets the standard. Soil tests are reviewed annually; water source upstream of agricultural runoff is required."
+  },
+  {
+    "n": "03",
+    "t": "Processing & Handling",
+    "d": "No artificial colours, preservatives, or undisclosed additives. FSSAI-registered facilities only.",
+    "long": "Every facility we work with is FSSAI-registered and inspected. We publish a list of permitted process aids on our website; anything outside that list is grounds for delisting. Cold-chain integrity is maintained for honey, ghee, and chyawanprash."
+  },
+  {
+    "n": "04",
+    "t": "Ethical Conduct",
+    "d": "Documented fair purchase prices. No child or bonded labour. Tribal cooperatives prioritised.",
+    "long": "Purchase prices are documented and benchmarked against the previous-month mandi rate; we pay at or above. Tribal cooperatives — Kurichiya, Paniya, Adiya — are prioritised for forest products. A surprise audit of one supplier per quarter is conducted by an external auditor."
+  },
+  {
+    "n": "05",
+    "t": "The Family Table Test",
+    "d": "Would the founder serve this on his own table, without hesitation? If not, the product is delisted.",
+    "long": "The final, unwritten rule. Every batch is tasted blind by the founder and two senior team members against a control sample from the previous lot. Drift in flavour, texture, or aroma triggers re-evaluation. A failed test ends the lot — even when commercial pressure says otherwise."
+  }
+]

@@ -1,0 +1,6 @@
+[
+  { "slug": "spices",       "name": "Spices",       "count":  6, "label": "pepper · cardamom · turmeric · cinnamon · fennel · chilly" },
+  { "slug": "staples",      "name": "Staples",      "count":  3, "label": "Gandhakasala · Jeerakasala · red rice" },
+  { "slug": "ayurveda",     "name": "Ayurveda",     "count":  2, "label": "curcuma · chyavanaprasam" },
+  { "slug": "health-foods", "name": "Health Foods", "count":  3, "label": "jackfruit · arrowroot · banana powder" }
+]

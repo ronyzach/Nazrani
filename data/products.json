@@ -1,0 +1,408 @@
+[
+  {
+    "id": "p01",
+    "name": "Tellicherry Black Pepper",
+    "subtitle": "Whole, sun-dried",
+    "origin": "Wayanad",
+    "lot": "WYD-PPR-26-04",
+    "price": 480,
+    "weight": "250g",
+    "gi": true,
+    "organic": "PGS-India",
+    "category": "Spices",
+    "label": "pepper, hand-graded",
+    "image": "assets/images/p01-pepper.jpg",
+    "stock": 84,
+    "harvested": "March 2026",
+    "story": "Hand-picked from smallholder vines in the misty Wayanad highlands at 800–900 m. Sun-cured on bamboo mats for nine days, then graded by hand into the Tellicherry Garbled Special Extra Bold (TGSEB) standard. The fruit is fuller, the volatile oil higher, the heat warmer than commodity-grade pepper.",
+    "notes": [
+      "Bold, citrus-forward heat with woody depth",
+      "Crack into stews, daals, and fresh-ground over eggs",
+      "Single estate — no blending across origins"
+    ],
+    "spec": {
+      "Bulk Density": "560–580 g/L",
+      "Volatile Oil": "≥ 3.5%",
+      "Moisture": "≤ 11%",
+      "Foreign Matter": "≤ 0.2%"
+    },
+    "weightGrams": 250
+  },
+  {
+    "id": "p02",
+    "name": "Idukki Green Cardamom",
+    "subtitle": "Bold pods, AGEB",
+    "origin": "Idukki",
+    "lot": "IDK-CRD-26-02",
+    "price": 720,
+    "weight": "100g",
+    "gi": true,
+    "organic": "India Organic",
+    "category": "Spices",
+    "label": "cardamom pods",
+    "image": "assets/images/p02-cardamom.jpg",
+    "stock": 52,
+    "harvested": "February 2026",
+    "story": "From a 7-acre estate in Vandanmedu, Idukki, sitting in the Western Ghats cloud-belt. Pods are picked just before splitting, dried slowly in steam-fired curing rooms, and graded to AGEB (Alleppey Green Extra Bold) — 8mm and above, deep emerald, intact stems.",
+    "notes": [
+      "Floral, eucalypt, sweet-warm finish",
+      "Crack pods just before use to preserve volatiles",
+      "GI-tagged — Idukki origin verified"
+    ],
+    "spec": {
+      "Pod Size": "≥ 8 mm",
+      "Volatile Oil": "≥ 6.5%",
+      "Moisture": "≤ 11%",
+      "Empty Pods": "≤ 1%"
+    },
+    "weightGrams": 100
+  },
+  {
+    "id": "p03",
+    "name": "Wayanad Turmeric Powder",
+    "subtitle": "Stone-ground, high-curcumin",
+    "origin": "Wayanad",
+    "lot": "WYD-TUR-26-01",
+    "price": 260,
+    "weight": "200g",
+    "gi": false,
+    "organic": "India Organic",
+    "category": "Spices",
+    "label": "turmeric powder",
+    "stock": 180,
+    "harvested": "February 2026",
+    "story": "Pratibha-variety rhizomes grown on smallholder plots in eastern Wayanad. Boiled briefly to set the colour, sun-dried for ten days, then stone-ground at low temperature to preserve the volatile oils. Deep ochre, faintly resinous, with a curcumin content well above commodity grade.",
+    "notes": [
+      "Earthy, warm, lightly bitter",
+      "Use in dals, pickles, and warm milk",
+      "Stone-ground in small batches — no machine heat"
+    ],
+    "spec": {
+      "Curcumin": "≥ 4.0%",
+      "Moisture": "≤ 8%",
+      "Ash": "≤ 7%",
+      "Foreign Matter": "≤ 0.5%"
+    },
+    "image": "assets/images/p03-turmeric.jpg",
+    "weightGrams": 200
+  },
+  {
+    "id": "p04",
+    "name": "Gandhakasala Rice",
+    "subtitle": "Wayanad GI · aromatic",
+    "origin": "Wayanad",
+    "lot": "WYD-GND-26-01",
+    "price": 420,
+    "weight": "1kg",
+    "gi": true,
+    "organic": "PGS-India",
+    "category": "Staples",
+    "label": "aromatic short-grain rice",
+    "stock": 240,
+    "harvested": "January 2026",
+    "story": "An indigenous short-grain aromatic rice from the Wayanad plateau, GI-tagged in 2010. Grown by tribal cultivators in Mananthavady block on rain-fed paddies. Releases a distinctive sandalwood-jasmine fragrance when cooked — traditionally served at weddings and temple feasts.",
+    "notes": [
+      "Cooks in 18 minutes, 1:2 water",
+      "Pairs with light curries and ghee",
+      "GI-protected variety — Wayanad origin verified"
+    ],
+    "spec": {
+      "Variety": "Gandhakasala (GI)",
+      "Grain": "Short, aromatic",
+      "Cooking Time": "18 minutes",
+      "Origin": "Mananthavady, Wayanad"
+    },
+    "image": "assets/images/p04-gandhakasala-rice.jpg",
+    "weightGrams": 1000
+  },
+  {
+    "id": "p05",
+    "name": "Jeerakasala Rice",
+    "subtitle": "Wayanad GI · biriyani rice",
+    "origin": "Wayanad",
+    "lot": "WYD-JKS-26-01",
+    "price": 380,
+    "weight": "1kg",
+    "gi": true,
+    "organic": "PGS-India",
+    "category": "Staples",
+    "label": "aromatic biriyani rice",
+    "stock": 210,
+    "harvested": "January 2026",
+    "story": "The cumin-shaped grain that gives the rice its name (jeerakam = cumin). A second GI-tagged Wayanad aromatic, slimmer and slightly less floral than Gandhakasala. The traditional rice for Malabar biriyani — tender, separate, perfumed.",
+    "notes": [
+      "Rinse twice; soak 20 minutes for biriyani",
+      "Cook 1:1.5 water by absorption",
+      "GI-protected — Wayanad cultivation only"
+    ],
+    "spec": {
+      "Variety": "Jeerakasala (GI)",
+      "Grain": "Slim, short-medium",
+      "Cooking Time": "15 minutes",
+      "Origin": "Wayanad plateau"
+    },
+    "image": "assets/images/p05-jeerakasala-rice.jpg",
+    "weightGrams": 1000
+  },
+  {
+    "id": "p06",
+    "name": "Palakkad Red Rice",
+    "subtitle": "Heirloom, parboiled",
+    "origin": "Palakkad",
+    "lot": "PLK-RED-26-02",
+    "price": 240,
+    "weight": "1kg",
+    "gi": true,
+    "organic": "PGS-India",
+    "category": "Staples",
+    "label": "red matta rice",
+    "stock": 410,
+    "harvested": "January 2026",
+    "story": "An indigenous medium-grain rice from Palakkad, parboiled in the husk to retain the rust-red bran. Higher fibre, lower glycaemic load, and a faintly nutty taste. Pairs traditionally with Kerala fish curry, kanji, or puttu.",
+    "notes": [
+      "Soak 30 minutes; 1:2.5 water; 25 minutes",
+      "Rinses cleaner if soaked twice",
+      "Single-village sourcing — Pollachi Block"
+    ],
+    "spec": {
+      "Variety": "Matta (Rosematta)",
+      "Type": "Parboiled, medium-grain",
+      "Bran Retention": "Full red bran",
+      "Fibre": "2.8 g / 100g"
+    },
+    "image": "assets/images/p06-red-rice.jpg",
+    "weightGrams": 1000
+  },
+  {
+    "id": "p07",
+    "name": "Jackfruit Powder",
+    "subtitle": "Raw, low-GI flour",
+    "origin": "Wayanad",
+    "lot": "WYD-JKF-26-01",
+    "price": 420,
+    "weight": "200g",
+    "gi": false,
+    "organic": "India Organic",
+    "category": "Health Foods",
+    "label": "green jackfruit flour",
+    "stock": 95,
+    "harvested": "March 2026",
+    "story": "Made from raw, unripe jackfruit harvested in March from village trees across Wayanad. Steamed gently to set the colour, sliced thin, sun-dried for four days, then milled fine. A low-glycaemic substitute for refined flour — ideal for diabetic-friendly rotis, idlis, and porridge.",
+    "notes": [
+      "Replace up to 30% of atta in roti dough",
+      "Cooks down softer than wheat — add water slowly",
+      "Low GI — clinically tested at ≤ 35"
+    ],
+    "spec": {
+      "Glycaemic Index": "≤ 35",
+      "Fibre": "7.2 g / 100g",
+      "Moisture": "≤ 8%",
+      "Origin": "Village trees, Wayanad"
+    },
+    "image": "assets/images/p07-jackfruit-powder.jpg",
+    "weightGrams": 200
+  },
+  {
+    "id": "p08",
+    "name": "Curcuma Capsules",
+    "subtitle": "High-curcumin extract",
+    "origin": "Wayanad",
+    "lot": "WYD-CUR-26-01",
+    "price": 540,
+    "weight": "60 caps",
+    "gi": false,
+    "organic": "India Organic",
+    "category": "Ayurveda",
+    "label": "curcuma longa extract",
+    "stock": 64,
+    "harvested": "February 2026",
+    "story": "A standardised extract from the same Pratibha-variety turmeric we mill for the kitchen, but processed for daily Ayurvedic use. Cold-extracted to retain the curcuminoid complex (not just curcumin), then encapsulated in vegetarian shells. No fillers, no synthetic anti-caking agents.",
+    "notes": [
+      "One capsule with food, twice daily",
+      "500 mg extract per capsule, 95% curcuminoids",
+      "Pairs with black pepper for absorption"
+    ],
+    "spec": {
+      "Curcuminoids": "≥ 95%",
+      "Extract per cap": "500 mg",
+      "Shell": "Vegetarian (HPMC)",
+      "Excipients": "None"
+    },
+    "image": "assets/images/p08-curcuma.jpg",
+    "weightGrams": 100
+  },
+  {
+    "id": "p09",
+    "name": "Cinnamon Quills",
+    "subtitle": "True cinnamon, hand-rolled",
+    "origin": "Idukki",
+    "lot": "IDK-CIN-26-01",
+    "price": 320,
+    "weight": "100g",
+    "gi": false,
+    "organic": "India Organic",
+    "category": "Spices",
+    "label": "cinnamomum verum",
+    "stock": 130,
+    "harvested": "February 2026",
+    "story": "True Ceylon-style cinnamon (Cinnamomum verum) — not the cassia commonly sold as cinnamon — grown on a small estate in Idukki. The bark is harvested young, peeled by hand, and rolled into the characteristic paper-thin quills as it dries. Sweeter, lighter, lower in coumarin than cassia.",
+    "notes": [
+      "Snap into milk, payasam, or chai",
+      "Grates more easily than cassia bark",
+      "Verum, not cassia — verified by lab"
+    ],
+    "spec": {
+      "Species": "Cinnamomum verum",
+      "Coumarin": "≤ 50 mg/kg",
+      "Moisture": "≤ 12%",
+      "Quill Form": "Hand-rolled, 8–10 cm"
+    },
+    "image": "assets/images/p09-cinnamon.jpg",
+    "weightGrams": 100
+  },
+  {
+    "id": "p10",
+    "name": "Arrowroot Powder",
+    "subtitle": "Pure starch, gluten-free",
+    "origin": "Kerala",
+    "lot": "KER-ARR-26-01",
+    "price": 280,
+    "weight": "250g",
+    "gi": false,
+    "organic": "India Organic",
+    "category": "Health Foods",
+    "label": "maranta arundinacea",
+    "stock": 170,
+    "harvested": "January 2026",
+    "story": "Traditional Kerala koova powder, extracted from Maranta arundinacea rhizomes harvested in coastal smallholdings. Washed, grated, and settled by gravity over four days — never bleached, never enzyme-treated. Soothing for the gut, cooling in summer kanji, and a clean gluten-free thickener.",
+    "notes": [
+      "Whisk 1 tsp into cool water before adding to hot dishes",
+      "Traditional summer kanji for children",
+      "Settles food without changing flavour"
+    ],
+    "spec": {
+      "Starch": "≥ 92%",
+      "Moisture": "≤ 12%",
+      "Sulphur": "Nil",
+      "Gluten": "Free"
+    },
+    "image": "assets/images/p10-arrowroot.jpg",
+    "weightGrams": 250
+  },
+  {
+    "id": "p11",
+    "name": "Whole Fennel Seed",
+    "subtitle": "Sweet, large-seeded",
+    "origin": "Coimbatore",
+    "lot": "CBE-FEN-26-01",
+    "price": 220,
+    "weight": "200g",
+    "gi": false,
+    "organic": "PGS-India",
+    "category": "Spices",
+    "label": "foeniculum vulgare",
+    "stock": 140,
+    "harvested": "December 2025",
+    "story": "Large-seeded, sweet variety fennel grown on the Coimbatore-Pollachi belt, where the dry climate concentrates the anethole that gives fennel its perfume. Sun-dried whole, sieved by hand to remove fines and stalk fragments, never gas-fumigated.",
+    "notes": [
+      "Chew after meals as a digestive",
+      "Bloom in oil before tempering dals",
+      "Sweet variety — not the bitter wild type"
+    ],
+    "spec": {
+      "Anethole": "≥ 2.5%",
+      "Moisture": "≤ 9%",
+      "Foreign Matter": "≤ 1%",
+      "Variety": "Sweet, large-seeded"
+    },
+    "image": "assets/images/p11-fennel.jpg",
+    "weightGrams": 200
+  },
+  {
+    "id": "p12",
+    "name": "Classical Chyavanaprasam",
+    "subtitle": "48 herbs, slow-cooked",
+    "origin": "Wayanad",
+    "lot": "WYD-CYP-26-01",
+    "price": 890,
+    "weight": "500g",
+    "gi": false,
+    "organic": "India Organic",
+    "category": "Ayurveda",
+    "label": "amla & herb conserve",
+    "stock": 38,
+    "harvested": "March 2026",
+    "story": "Prepared at the Vanamoolika cooperative in Wayanad to a classical Ashtanga Hridayam recipe — 48 herbs including bilva, dashamoola, and pippali, slow-cooked with wild amla, cow ghee, and forest honey. Each batch is recorded in a hand-written kashayam log.",
+    "notes": [
+      "One teaspoon, mornings, with warm milk or water",
+      "Cooked over a single seven-hour shift in copper",
+      "Honey added off-heat, never boiled"
+    ],
+    "spec": {
+      "Amla Content": "≥ 60% by weight",
+      "Total Herbs": "48",
+      "Sugar": "Jaggery only",
+      "Preservative": "None"
+    },
+    "image": "assets/images/p12-chyavanaprasam.jpg",
+    "weightGrams": 500
+  },
+  {
+    "id": "p13",
+    "name": "Nendran Banana Powder",
+    "subtitle": "Raw banana flour",
+    "origin": "Kerala",
+    "lot": "KER-BAN-26-01",
+    "price": 320,
+    "weight": "250g",
+    "gi": false,
+    "organic": "India Organic",
+    "category": "Health Foods",
+    "label": "raw nendran flour",
+    "stock": 110,
+    "harvested": "February 2026",
+    "story": "Made from raw, unripe Nendran bananas — the variety prized in Kerala for chips, baby food, and Ayurvedic preparations. Peeled, sliced, sun-dried on raised beds, and milled fine. Resistant starch, gentle on the gut, and the traditional first solid food for infants in Kerala households.",
+    "notes": [
+      "Mix 1 tbsp into warm milk or water for kids",
+      "Replaces 20–30% of refined flour in baking",
+      "Resistant starch — supports gut health"
+    ],
+    "spec": {
+      "Variety": "Nendran (raw)",
+      "Resistant Starch": "≥ 18%",
+      "Moisture": "≤ 9%",
+      "Origin": "Kerala smallholdings"
+    },
+    "image": "assets/images/p13-banana-powder.jpg",
+    "weightGrams": 250
+  },
+  {
+    "id": "p14",
+    "name": "Kashmiri Chilly Powder",
+    "subtitle": "Deep red, mild heat",
+    "origin": "Kashmir Valley",
+    "lot": "KSH-CHL-26-01",
+    "price": 360,
+    "weight": "200g",
+    "gi": true,
+    "organic": "India Organic",
+    "category": "Spices",
+    "label": "low-heat chilli powder",
+    "stock": 150,
+    "harvested": "November 2025",
+    "story": "Our one cross-regional SKU. Sourced from a smallholder cooperative in the Pulwama district of Kashmir, where the cool, dry autumns produce a chilli that is famous for colour rather than heat. Sun-dried whole, hand-stemmed, and stone-ground without additives. The deep crimson Kashmiri kitchens prize.",
+    "notes": [
+      "Use generously — heat is mild, colour intense",
+      "Bloom in oil to release the carotenoids",
+      "No added colour, no rice-bran filler"
+    ],
+    "spec": {
+      "Capsaicin": "Low (1,000–1,500 SHU)",
+      "Colour (ASTA)": "≥ 80",
+      "Moisture": "≤ 10%",
+      "Adulterants": "Nil"
+    },
+    "image": "assets/images/p14-kashmiri-chilly.jpg",
+    "weightGrams": 200
+  }
+]
