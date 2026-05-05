@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Traffic · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Traffic</h1>
+      </div>
+      <div class="topbar-actions">
+        <span style="font-size:11px;color:var(--ink-muted);">Period:</span>
+        <div style="display:inline-flex;align-items:center;border:1px solid var(--border-strong);border-radius:var(--radius);overflow:hidden;">
+          <button class="btn btn-ghost btn-sm period-btn active" data-days="7"  style="border-radius:0;border:none;">7D</button>
+          <button class="btn btn-ghost btn-sm period-btn"        data-days="30" style="border-radius:0;border:none;border-left:1px solid var(--border-strong);">30D</button>
+          <button class="btn btn-ghost btn-sm period-btn"        data-days="90" style="border-radius:0;border:none;border-left:1px solid var(--border-strong);">90D</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <div class="stat-grid" id="stat-grid"></div>
+
+      <!-- Daily sessions chart -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <h2>Daily Sessions</h2>
+          <span id="chart-sub" style="font-size:12px;color:var(--ink-muted);"></span>
+        </div>
+        <div class="card-body">
+          <div class="bar-chart" id="sessions-chart" style="height:180px;align-items:flex-end;"></div>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-bottom:20px;">
+        <!-- Top pages -->
+        <div class="card">
+          <div class="card-header"><h2>Top Pages</h2></div>
+          <div class="card-body no-pad">
+            <table class="data-table" id="top-pages"></table>
+          </div>
+        </div>
+
+        <!-- Traffic sources -->
+        <div class="card">
+          <div class="card-header"><h2>Traffic Sources</h2></div>
+          <div class="card-body" id="sources-chart"></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Device breakdown -->
+        <div class="card">
+          <div class="card-header"><h2>Device Breakdown</h2></div>
+          <div class="card-body" id="device-chart"></div>
+        </div>
+
+        <!-- Visitor behaviour -->
+        <div class="card">
+          <div class="card-header"><h2>Visitor Behaviour</h2></div>
+          <div class="card-body" id="behaviour-stats"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('traffic');
+
+const VIS_KEY = 'nazrani:visitors:v1';
+
+// ── Seed 90 days of demo data if storage is sparse ────────────────────────
+(function seed() {
+  var ex = [];
+  try { ex = JSON.parse(localStorage.getItem(VIS_KEY) || '[]'); } catch(e) {}
+  if (ex.length > 100) return;
+
+  var pages   = [{n:'Home',w:40},{n:'Product Detail',w:35},{n:'About',w:10},{n:'FAQ & Returns',w:8},{n:'Journal',w:5},{n:'My Orders',w:2}];
+  var devices = [{n:'Mobile',w:65},{n:'Desktop',w:30},{n:'Tablet',w:5}];
+  var sources = [{n:'Direct',w:40},{n:'Social',w:35},{n:'Search',w:20},{n:'Referral',w:5}];
+
+  function pick(arr) {
+    var t = arr.reduce(function(s,x){return s+x.w;},0), r = Math.random()*t;
+    for (var i=0;i<arr.length;i++) { r -= arr[i].w; if (r <= 0) return arr[i].n; }
+    return arr[0].n;
+  }
+  function rnd(a,b) { return a + Math.floor(Math.random()*(b-a+1)); }
+
+  var events = [], now = new Date();
+  for (var d = 89; d >= 0; d--) {
+    var date = new Date(now.getFullYear(), now.getMonth(), now.getDate()-d);
+    var dow  = date.getDay(), weekend = (dow===0||dow===6);
+    var visitors = rnd(18,38) + (weekend ? rnd(10,20) : 0);
+    for (var v = 0; v < visitors; v++) {
+      var sid   = Math.random().toString(36).slice(2,11);
+      var depth = rnd(1,4);
+      var hour  = rnd(7,22);
+      var src   = pick(sources);
+      var dev   = pick(devices);
+      for (var p = 0; p < depth; p++) {
+        events.push({
+          sid: sid,
+          ts:  new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, rnd(0,59)).toISOString(),
+          page: pick(pages),
+          device: dev,
+          source: src,
+        });
+      }
+    }
+  }
+  try { localStorage.setItem(VIS_KEY, JSON.stringify(events)); } catch(e) {}
+})();
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+var esc = Admin.esc;
+
+function loadEvents(days) {
+  try {
+    var all  = JSON.parse(localStorage.getItem(VIS_KEY) || '[]');
+    var cut  = new Date(); cut.setDate(cut.getDate() - days);
+    return all.filter(function(e){ return new Date(e.ts) >= cut; });
+  } catch(e) { return []; }
+}
+
+function hbar(pct, color) {
+  return '<div style="flex:1;height:7px;background:var(--border);border-radius:99px;overflow:hidden;">'
+    + '<div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:99px;"></div></div>';
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+var activeDays = 7;
+
+function render() {
+  var events = loadEvents(activeDays);
+
+  // session map: sid → page count
+  var sidMap = {};
+  events.forEach(function(e) { sidMap[e.sid] = (sidMap[e.sid]||0) + 1; });
+  var sidList   = Object.keys(sidMap);
+  var sessions  = sidList.length;
+  var pageViews = events.length;
+  var bounces   = sidList.filter(function(s){ return sidMap[s] === 1; }).length;
+  var bounceRate = sessions ? Math.round(bounces/sessions*100) : 0;
+  var avgDepth   = sessions ? +(pageViews/sessions).toFixed(1) : 0;
+
+  // ── Stat cards ────────────────────────────────────────────────────────
+  document.getElementById('stat-grid').innerHTML = [
+    { label:'Sessions',        value: sessions.toLocaleString('en-IN'),  sub:'Unique visits in period' },
+    { label:'Page Views',      value: pageViews.toLocaleString('en-IN'), sub:'Total pages loaded' },
+    { label:'Pages / Session', value: avgDepth,                           sub:'Avg depth per visit' },
+    { label:'Bounce Rate',     value: bounceRate+'%',                     sub:'Single-page sessions', hi: bounceRate > 60 },
+  ].map(function(s){
+    return '<div class="stat-card"><div class="label">'+s.label+'</div>'
+      +'<div class="value" style="'+(s.hi?'color:var(--amber);':'')+'">' +s.value+'</div>'
+      +'<div class="sub">'+s.sub+'</div></div>';
+  }).join('');
+
+  // ── Daily sessions bar chart ──────────────────────────────────────────
+  var days = activeDays;
+  var now  = new Date();
+  var buckets = [];
+  for (var i = days-1; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate()-i);
+    buckets.push({ label: d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}), key: d.toDateString(), sids:{} });
+  }
+  events.forEach(function(e){
+    var key = new Date(e.ts).toDateString();
+    var b = buckets.find(function(x){return x.key===key;});
+    if (b) b.sids[e.sid] = true;
+  });
+  buckets.forEach(function(b){ b.count = Object.keys(b.sids).length; });
+  var maxS = Math.max.apply(null, buckets.map(function(b){return b.count;})) || 1;
+
+  document.getElementById('chart-sub').textContent = 'Last ' + days + ' days';
+  document.getElementById('sessions-chart').innerHTML = buckets.map(function(b, i){
+    var pct     = Math.round(b.count/maxS*100);
+    var showLbl = days <= 14 || i % Math.ceil(days/14) === 0 || i === days-1;
+    return '<div class="bar-col">'
+      +'<div class="bar-val">'+(b.count||'')+'</div>'
+      +'<div class="bar" style="height:'+Math.max(pct,2)+'%;"></div>'
+      +'<div class="bar-label" style="'+(showLbl?'':'visibility:hidden;')+'">'+b.label+'</div>'
+      +'</div>';
+  }).join('');
+
+  // ── Top pages ─────────────────────────────────────────────────────────
+  var pgMap = {};
+  events.forEach(function(e){ pgMap[e.page] = (pgMap[e.page]||0)+1; });
+  var topPages = Object.entries(pgMap).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  var maxPV    = topPages[0] ? topPages[0][1] : 1;
+  document.getElementById('top-pages').innerHTML = '<thead><tr><th>Page</th><th>Views</th><th style="width:38%;">Share</th></tr></thead><tbody>'
+    + topPages.map(function(p){
+        var pct  = pageViews ? Math.round(p[1]/pageViews*100) : 0;
+        var barW = Math.round(p[1]/maxPV*100);
+        return '<tr>'
+          +'<td class="td-primary">'+esc(p[0])+'</td>'
+          +'<td class="td-mono">'+p[1].toLocaleString('en-IN')+'</td>'
+          +'<td><div style="display:flex;align-items:center;gap:8px;">'
+          +hbar(barW,'var(--green)')
+          +'<span style="font-size:11px;color:var(--ink-muted);min-width:28px;">'+pct+'%</span></div></td></tr>';
+      }).join('')
+    + '</tbody>';
+
+  // ── Traffic sources ───────────────────────────────────────────────────
+  var srcSids = {};
+  events.forEach(function(e){
+    if (!srcSids[e.source]) srcSids[e.source] = {};
+    srcSids[e.source][e.sid] = true;
+  });
+  var srcColors = { Direct:'var(--green)', Social:'var(--amber)', Search:'var(--blue)', Referral:'var(--ink-muted)' };
+  var srcList = Object.entries(srcSids)
+    .map(function(x){ return { name:x[0], count:Object.keys(x[1]).length }; })
+    .sort(function(a,b){ return b.count-a.count; });
+  var maxSrc = srcList[0] ? srcList[0].count : 1;
+  document.getElementById('sources-chart').innerHTML = srcList.map(function(x){
+    var pct  = sessions ? Math.round(x.count/sessions*100) : 0;
+    var barW = Math.round(x.count/maxSrc*100);
+    return '<div style="margin-bottom:16px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;">'
+      +'<span style="color:var(--ink-soft);">'+esc(x.name)+'</span>'
+      +'<span style="font-weight:600;">'+x.count+' <span style="color:var(--ink-muted);font-weight:400;">('+pct+'%)</span></span></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +hbar(barW, srcColors[x.name]||'var(--ink-muted)')
+      +'</div></div>';
+  }).join('');
+
+  // ── Device breakdown ──────────────────────────────────────────────────
+  var devSids = {};
+  events.forEach(function(e){
+    if (!devSids[e.device]) devSids[e.device] = {};
+    devSids[e.device][e.sid] = true;
+  });
+  var devColors = { Mobile:'var(--green)', Desktop:'var(--blue)', Tablet:'var(--amber)' };
+  var devList = Object.entries(devSids)
+    .map(function(x){ return { name:x[0], count:Object.keys(x[1]).length }; })
+    .sort(function(a,b){ return b.count-a.count; });
+  var maxDev = devList[0] ? devList[0].count : 1;
+  document.getElementById('device-chart').innerHTML = devList.map(function(x){
+    var pct  = sessions ? Math.round(x.count/sessions*100) : 0;
+    var barW = Math.round(x.count/maxDev*100);
+    return '<div style="margin-bottom:16px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;">'
+      +'<span style="color:var(--ink-soft);">'+esc(x.name)+'</span>'
+      +'<span style="font-weight:600;">'+x.count+' <span style="color:var(--ink-muted);font-weight:400;">('+pct+'%)</span></span></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +hbar(barW, devColors[x.name]||'var(--ink-muted)')
+      +'</div></div>';
+  }).join('');
+
+  // ── Visitor behaviour ─────────────────────────────────────────────────
+  var multiPage = sidList.filter(function(s){ return sidMap[s] >= 3; }).length;
+  document.getElementById('behaviour-stats').innerHTML = [
+    { label:'Total Sessions',          value: sessions.toLocaleString('en-IN'),           sub:'Unique visits' },
+    { label:'Single-Page (Bounced)',   value: bounces.toLocaleString('en-IN'),             sub:'Left after 1 page' },
+    { label:'Multi-Page Explorers',    value: (sessions-bounces).toLocaleString('en-IN'), sub:'Viewed 2+ pages' },
+    { label:'Deep Visitors (3+ pages)',value: multiPage.toLocaleString('en-IN'),           sub:'High engagement' },
+  ].map(function(s){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);">'
+      +'<div><div style="font-size:13px;color:var(--ink-soft);">'+s.label+'</div>'
+      +'<div style="font-size:11px;color:var(--ink-muted);margin-top:2px;">'+s.sub+'</div></div>'
+      +'<div style="font-size:20px;font-weight:700;color:var(--ink);">'+s.value+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ── Period toggle ─────────────────────────────────────────────────────────
+document.querySelectorAll('.period-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.period-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeDays = parseInt(btn.dataset.days);
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>

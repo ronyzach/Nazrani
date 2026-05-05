@@ -17,12 +17,16 @@
     <div class="container" id="page-head"></div>
   </section>
 
-  <section id="story" class="story" aria-labelledby="story-title">
+  <section id="story" class="story" style="background:var(--paper)" aria-labelledby="story-title">
     <div class="container grid" id="story-grid"></div>
   </section>
 
-  <section class="founder" aria-labelledby="founder-eyebrow">
+  <section class="founder" style="background:var(--paper-cool)" aria-labelledby="founder-eyebrow">
     <div class="container" id="founder-body"></div>
+  </section>
+
+  <section class="story" id="partners" style="background:var(--paper)" aria-labelledby="partners-title">
+    <div class="container" id="partners-body"></div>
   </section>
 
   <section class="categories" aria-labelledby="next-title">
@@ -38,6 +42,7 @@
 <script src="assets/data.js"></script>
 <script src="assets/data-service.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/tracker.js"></script>
 <script>
 (async function () {
   Nazrani.init({ active: 'about', pageId: 'about' });
@@ -78,6 +83,30 @@
       <div>
         <div class="name">${esc(H.founder.name)}</div>
         <div class="role">${esc(H.founder.role)}</div>
+      </div>
+    </div>`;
+
+  // -------- PARTNERS ------------------------------------------------------
+  const P = A.partners;
+  document.getElementById('partners-body').innerHTML = `
+    <div class="grid">
+      <div>
+        <div class="eyebrow">${esc(P.eyebrow)}</div>
+        <h2 id="partners-title">${esc(P.titleA)}<span class="serif-i">${esc(P.titleB)}</span></h2>
+      </div>
+      <div class="col-r">
+        <p class="lede">${esc(P.lede)}</p>
+        ${P.list.map((pt, i) => `
+          <div class="partner-card" style="border-top:1px solid var(--rule);padding:28px 0 8px;margin-top:24px;">
+            <div class="meta" style="font-family:var(--mono);font-size:9px;letter-spacing:0.16em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:10px;">${pad2(i + 1)} · ${esc(pt.since)}</div>
+            <h3 style="font-family:var(--serif);font-weight:500;font-size:28px;line-height:1.15;margin:0 0 4px;">${esc(pt.name)}</h3>
+            <div style="color:var(--ink-soft);font-size:14px;margin-bottom:14px;">${esc(pt.location)}</div>
+            <div class="tags" style="margin:0 0 16px;">
+              ${pt.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}
+            </div>
+            <p>${esc(pt.body)}</p>
+            <p style="margin-top:14px;"><a class="more" href="${esc(pt.website.href)}" target="_blank" rel="noopener">${esc(pt.website.label)}</a></p>
+          </div>`).join('')}
       </div>
     </div>`;
 

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Dashboard</h1>
+      </div>
+      <div class="topbar-actions">
+        <div style="display:inline-flex;align-items:center;border:1px solid var(--border-strong);border-radius:var(--radius);background:#fff;overflow:hidden;height:32px;">
+          <span style="font-size:11px;color:var(--ink-muted);font-weight:500;padding:0 8px;white-space:nowrap;">From</span>
+          <input type="date" id="date-from" style="font-size:12px;padding:0 8px;border:none;border-left:1px solid var(--border-strong);border-right:1px solid var(--border-strong);color:var(--ink);background:transparent;cursor:pointer;outline:none;height:100%;"/>
+          <span style="font-size:11px;color:var(--ink-muted);font-weight:500;padding:0 8px;white-space:nowrap;">To</span>
+          <input type="date" id="date-to" style="font-size:12px;padding:0 8px;border:none;border-left:1px solid var(--border-strong);border-right:1px solid var(--border-strong);color:var(--ink);background:transparent;cursor:pointer;outline:none;height:100%;"/>
+          <button id="date-reset" class="btn btn-ghost btn-sm" style="border-radius:0;border:none;height:100%;padding:0 12px;" title="Reset to this year">Reset</button>
+        </div>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="stat-grid" id="stat-grid"></div>
+      <div class="two-col" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-header"><h2>Recent Orders</h2><a href="orders.html" class="btn btn-ghost btn-sm">View all →</a></div>
+          <div class="card-body no-pad"><table class="data-table" id="recent-orders"></table></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2>Orders by Status</h2></div>
+          <div class="card-body" id="status-breakdown"></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><h2>Low Stock Alert</h2><a href="inventory.html" class="btn btn-ghost btn-sm">Manage →</a></div>
+          <div class="card-body no-pad"><table class="data-table" id="low-stock"></table></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>Revenue — Last 6 Months</h2>
+            <div id="chart-toggle" style="display:inline-flex;border:1px solid var(--border-strong);border-radius:var(--radius);overflow:hidden;background:#fff;">
+              <button class="chart-type-btn active" data-type="line" style="font-size:11px;font-weight:600;padding:4px 12px;border:none;cursor:pointer;background:var(--green);color:#fff;transition:background 140ms,color 140ms;">Line</button>
+              <button class="chart-type-btn" data-type="bar" style="font-size:11px;font-weight:600;padding:4px 12px;border:none;cursor:pointer;background:transparent;color:var(--ink-muted);transition:background 140ms,color 140ms;">Bar</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:12px 16px 16px;">
+            <div id="rev-chart" style="width:100%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('dashboard');
+
+const allOrders      = DataService.getOrders();
+const products       = window.DATA.products || [];
+const inv            = Admin.getInventory();
+const reorderLevels  = Admin.getReorderLevels();
+const issueCount     = allOrders.filter(function(o){ return !!o.issue; }).length;
+const reorderAlert   = products.filter(function(p){
+  var stock = inv[p.id] !== undefined ? inv[p.id] : 50;
+  var level = reorderLevels[p.id] !== undefined ? reorderLevels[p.id] : 10;
+  return stock <= level;
+}).length;
+const esc = Admin.esc, rupee = Admin.rupee, fmtDate = Admin.fmtDate;
+
+// ── Date range setup ─────────────────────────────────────────────────────
+const dateFrom = document.getElementById('date-from');
+const dateTo   = document.getElementById('date-to');
+const today    = new Date();
+const yearStart = new Date(today.getFullYear(), 0, 1);
+
+function toYMD(d) { return d.toISOString().slice(0,10); }
+dateFrom.value = toYMD(yearStart);
+dateTo.value   = toYMD(today);
+
+function filteredOrders() {
+  const from = dateFrom.value ? new Date(dateFrom.value) : null;
+  const to   = dateTo.value   ? new Date(dateTo.value + 'T23:59:59') : null;
+  return allOrders.filter(function(o) {
+    if (!o.placed) return true;
+    const d = new Date(o.placed);
+    return (!from || d >= from) && (!to || d <= to);
+  });
+}
+
+function rangeLabel() {
+  if (!dateFrom.value && !dateTo.value) return 'All time';
+  const f = dateFrom.value ? new Date(dateFrom.value).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+  const t = dateTo.value   ? new Date(dateTo.value).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})   : '—';
+  return f + ' → ' + t;
+}
+
+function render() {
+  const orders = filteredOrders();
+
+  // ── Stats ──────────────────────────────────────────────────────────────
+  const totalRev  = orders.reduce(function(s,o){ return s+(o.total||0); },0);
+  const pending   = orders.filter(function(o){ return o.status==='YET TO SHIP'; }).length;
+  const delivered = orders.filter(function(o){ return o.status==='DELIVERED'; }).length;
+  const aov       = orders.length ? Math.round(totalRev/orders.length) : 0;
+
+  document.getElementById('stat-grid').innerHTML = [
+    { label: 'Orders',          value: orders.length,   sub: delivered+' delivered · '+rangeLabel() },
+    { label: 'Revenue',         value: rupee(totalRev), sub: rangeLabel() },
+    { label: 'Avg Order Value', value: rupee(aov),       sub: 'Per order' },
+    { label: 'Pending Dispatch',value: pending,        sub: 'Yet to ship',                highlight: pending>0 },
+    { label: 'Orders with Issues', value: issueCount,  sub: 'Need attention',             highlight: issueCount>0 },
+    { label: 'Re-order Alert',  value: reorderAlert,   sub: 'At or below re-order level', highlight: reorderAlert>0 },
+  ].map(function(s){
+    return '<div class="stat-card">'
+      +'<div class="label">'+s.label+'</div>'
+      +'<div class="value" style="'+(s.highlight?'color:var(--amber);':'')+'">' +s.value+'</div>'
+      +'<div class="sub">'+s.sub+'</div></div>';
+  }).join('');
+
+  // ── Recent orders ───────────────────────────────────────────────────────
+  const recentRows = orders.slice(0,4).map(function(o){
+    const items = (o.items||[]).map(function(i){ return i.name; }).join(', ');
+    return '<tr>'
+      +'<td class="td-mono">'+esc(o.orderId)+'</td>'
+      +'<td class="td-primary" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(items)+'</td>'
+      +'<td class="td-amt">'+rupee(o.total)+'</td>'
+      +'<td>'+Admin.statusBadge(o.status)+'</td>'
+      +'</tr>';
+  }).join('') || '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink-muted);">No orders in range</td></tr>';
+  document.getElementById('recent-orders').innerHTML =
+    '<thead><tr><th>Order ID</th><th>Items</th><th>Amount</th><th>Status</th></tr></thead><tbody>'+recentRows+'</tbody>';
+
+  // ── Revenue chart (6 months ending at dateTo) ────────────────────────────
+  const endDate = dateTo.value ? new Date(dateTo.value) : today;
+  const months = [];
+  for(var i=5;i>=0;i--){
+    var dm = new Date(endDate.getFullYear(), endDate.getMonth()-i, 1);
+    months.push({ label: dm.toLocaleString('en-IN',{month:'short'}), year: dm.getFullYear(), month: dm.getMonth() });
+  }
+  const monthRev = months.map(function(m){
+    return orders.filter(function(o){
+      var d=new Date(o.placed); return d.getMonth()===m.month && d.getFullYear()===m.year;
+    }).reduce(function(s,o){ return s+(o.total||0); },0);
+  });
+  currentMonths  = months;
+  currentRevData = monthRev;
+  drawChart();
+
+  // ── Status breakdown ────────────────────────────────────────────────────
+  const statuses = ['YET TO SHIP','IN TRANSIT','DELIVERED','CANCELLED'];
+  const colors   = ['var(--ink-muted)','var(--amber)','var(--green)','var(--red)'];
+  document.getElementById('status-breakdown').innerHTML = statuses.map(function(s,i){
+    var cnt=orders.filter(function(o){ return (o.status||'CONFIRMED')===s||(s==='YET TO SHIP'&&o.status==='CONFIRMED'); }).length;
+    var pct=orders.length?Math.round(cnt/orders.length*100):0;
+    return '<div style="margin-bottom:14px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">'
+      +'<span style="color:var(--ink-soft);">'+s+'</span><span style="font-weight:600;">'+cnt+' <span style="color:var(--ink-muted);font-weight:400;">('+pct+'%)</span></span></div>'
+      +'<div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+colors[i]+';border-radius:99px;"></div>'
+      +'</div></div>';
+  }).join('');
+}
+
+// ── Chart state & drawing ─────────────────────────────────────────────────
+var currentChartType = 'line';
+var currentMonths    = [];
+var currentRevData   = [];
+
+function drawChart() {
+  var container = document.getElementById('rev-chart');
+  var values    = currentRevData;
+  var months    = currentMonths;
+  var maxVal    = Math.max.apply(null, values) || 1;
+
+  if (currentChartType === 'bar') {
+    container.innerHTML = '<div class="bar-chart" style="height:160px;padding:0 4px;">'
+      + values.map(function(v, i){
+          var pct = Math.round(v / maxVal * 100);
+          return '<div class="bar-col">'
+            + '<div class="bar-val">' + (v ? rupee(v) : '') + '</div>'
+            + '<div class="bar" style="height:' + Math.max(pct, 2) + '%;"></div>'
+            + '<div class="bar-label">' + months[i].label + '</div></div>';
+        }).join('')
+      + '</div>';
+    return;
+  }
+
+  // ── SVG line chart ──────────────────────────────────────────────────────
+  var W    = container.clientWidth || 480;
+  var H    = 180;
+  var padL = 8, padR = 8, padT = 34, padB = 28;
+  var cW   = W - padL - padR;
+  var cH   = H - padT - padB;
+  var n    = values.length;
+  var green = '#2c5239';
+  var greenLight = '#e8f5ec';
+
+  var xs = values.map(function(_, i){ return padL + (n === 1 ? cW/2 : (i / (n-1)) * cW); });
+  var ys = values.map(function(v){ return padT + (1 - v / maxVal) * cH; });
+
+  // Smooth cubic bezier path
+  function pathD(xs, ys) {
+    var d = 'M ' + xs[0] + ' ' + ys[0];
+    for (var i = 1; i < xs.length; i++) {
+      var cpx = (xs[i-1] + xs[i]) / 2;
+      d += ' C ' + cpx + ' ' + ys[i-1] + ' ' + cpx + ' ' + ys[i] + ' ' + xs[i] + ' ' + ys[i];
+    }
+    return d;
+  }
+
+  var linePath = pathD(xs, ys);
+  var areaPath = linePath
+    + ' L ' + xs[n-1] + ' ' + (padT + cH)
+    + ' L ' + xs[0]   + ' ' + (padT + cH) + ' Z';
+
+  // Grid lines (3 horizontal)
+  var gridLines = [0.25, 0.5, 0.75].map(function(f){
+    var gy = padT + (1 - f) * cH;
+    return '<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy
+      + '" stroke="#e8eae8" stroke-width="1" stroke-dasharray="3 3"/>'
+      + '<text x="' + (padL - 2) + '" y="' + (gy + 4) + '" font-size="8" fill="#aaa" text-anchor="end">'
+      + (maxVal * f > 999 ? '₹' + Math.round(maxVal * f / 1000) + 'k' : '₹' + Math.round(maxVal * f))
+      + '</text>';
+  }).join('');
+
+  // Dots + labels
+  var dots = values.map(function(v, i){
+    var x = xs[i], y = ys[i];
+    var label = v ? rupee(v) : '';
+    var labelY = y - 10;
+    if (labelY < 10) labelY = y + 18;
+    return '<circle cx="' + x + '" cy="' + y + '" r="4" fill="' + green + '" stroke="#fff" stroke-width="2"/>'
+      + (label ? '<text x="' + x + '" y="' + labelY + '" font-size="9" fill="' + green + '" text-anchor="middle" font-weight="600">' + label + '</text>' : '');
+  }).join('');
+
+  // Month labels
+  var labels = months.map(function(m, i){
+    return '<text x="' + xs[i] + '" y="' + (H - 4) + '" font-size="9" fill="#888" text-anchor="middle" letter-spacing="0.06em">' + m.label + '</text>';
+  }).join('');
+
+  container.innerHTML = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;">'
+    + '<defs>'
+    +   '<linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">'
+    +     '<stop offset="0%" stop-color="' + green + '" stop-opacity="0.18"/>'
+    +     '<stop offset="100%" stop-color="' + green + '" stop-opacity="0.01"/>'
+    +   '</linearGradient>'
+    + '</defs>'
+    + gridLines
+    + '<path d="' + areaPath + '" fill="url(#revGrad)"/>'
+    + '<path d="' + linePath  + '" fill="none" stroke="' + green + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    + dots
+    + labels
+    + '</svg>';
+}
+
+// Wire chart type toggle
+document.querySelectorAll('.chart-type-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    currentChartType = btn.dataset.type;
+    document.querySelectorAll('.chart-type-btn').forEach(function(b){
+      var active = b.dataset.type === currentChartType;
+      b.style.background = active ? 'var(--green)' : 'transparent';
+      b.style.color      = active ? '#fff' : 'var(--ink-muted)';
+    });
+    drawChart();
+  });
+});
+
+// ── Low stock (not date-filtered — always full) ──────────────────────────
+const lowRows = products.map(function(p){
+  var qty=inv[p.id]!==undefined?inv[p.id]:50; return {p:p,qty:qty};
+}).filter(function(x){ return x.qty<=15; }).slice(0,6)
+  .map(function(x){
+    return '<tr><td class="td-primary">'+esc(x.p.name)+'</td>'
+      +'<td>'+Admin.stockBadge(x.qty)+'</td>'
+      +'<td class="td-actions"><a href="inventory.html" class="btn btn-ghost btn-sm">Adjust</a></td></tr>';
+  }).join('');
+document.getElementById('low-stock').innerHTML =
+  '<thead><tr><th>Product</th><th>Stock</th><th></th></tr></thead><tbody>'
+  +(lowRows||'<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--ink-muted);">All stock levels healthy</td></tr>')
+  +'</tbody>';
+
+dateFrom.addEventListener('change', render);
+dateTo.addEventListener('change', render);
+document.getElementById('date-reset').addEventListener('click', function(){
+  dateFrom.value = toYMD(yearStart);
+  dateTo.value   = toYMD(today);
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

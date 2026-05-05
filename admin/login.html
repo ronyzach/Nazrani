@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin Login · Nazrani Heritage</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div class="brand">
+      <div class="name">Nazrani Heritage</div>
+      <div class="sub">Admin Panel</div>
+    </div>
+    <h2>Sign in to continue</h2>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label for="usr">Username</label>
+      <input id="usr" type="text" placeholder="Username" autocomplete="username"/>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label for="pwd">Password</label>
+      <input id="pwd" type="password" placeholder="Password" autocomplete="current-password"/>
+    </div>
+    <button class="btn btn-primary" id="login-btn" style="width:100%;justify-content:center;">Sign in →</button>
+    <div class="login-error" id="login-error">Incorrect username or password.</div>
+  </div>
+</div>
+<script src="assets/admin.js"></script>
+<script>
+(function () {
+  if (Admin.isAuthed()) { location.replace('dashboard.html'); return; }
+  const usr = document.getElementById('usr');
+  const pwd = document.getElementById('pwd');
+  const err = document.getElementById('login-error');
+  function attempt() {
+    if (Admin.login(usr.value.trim(), pwd.value)) location.replace('dashboard.html');
+    else { err.style.display = 'block'; pwd.value = ''; usr.focus(); }
+  }
+  document.getElementById('login-btn').addEventListener('click', attempt);
+  pwd.addEventListener('keydown', function (e) { if (e.key === 'Enter') attempt(); });
+  usr.addEventListener('keydown', function (e) { if (e.key === 'Enter') pwd.focus(); });
+  usr.focus();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Settings · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+<style>
+.toggle { display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
+.toggle input { display:none; }
+.toggle-track { width:36px; height:20px; background:var(--border-strong); border-radius:99px; position:relative; transition:background 180ms; flex-shrink:0; }
+.toggle-track::after { content:''; position:absolute; top:3px; left:3px; width:14px; height:14px; background:#fff; border-radius:50%; transition:transform 180ms; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.toggle input:checked ~ .toggle-track { background:var(--green); }
+.toggle input:checked ~ .toggle-track::after { transform:translateX(16px); }
+
+.section-nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+.section-nav a { font-size:11px; font-weight:500; padding:5px 12px; border-radius:99px; background:var(--card-bg); border:1px solid var(--border-strong); color:var(--ink-soft); text-decoration:none; transition:all 140ms; }
+.section-nav a:hover { background:var(--green); color:#fff; border-color:var(--green); }
+
+.settings-card { margin-bottom:20px; scroll-margin-top:80px; }
+
+.notify-item { display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--border); }
+.notify-item:last-child { border-bottom:none; }
+.notify-item .ni-label { font-size:13px; font-weight:500; color:var(--ink); }
+.notify-item .ni-sub { font-size:11px; color:var(--ink-muted); margin-top:2px; }
+
+.danger-zone { border:1px solid #f0c0bb; border-radius:var(--radius); padding:18px 20px; background:#fff9f8; }
+.danger-zone h3 { font-size:13px; font-weight:600; color:var(--red); margin-bottom:4px; }
+.danger-zone p { font-size:12px; color:var(--ink-soft); margin-bottom:14px; line-height:1.6; }
+
+.export-row { display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--border); }
+.export-row:last-child { border-bottom:none; }
+.export-row .er-label { font-size:13px; font-weight:500; color:var(--ink); }
+.export-row .er-sub { font-size:11px; color:var(--ink-muted); margin-top:2px; }
+
+.info-callout { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:6px; background:var(--blue-light); border:1px solid #b8d8f0; font-size:12px; color:var(--blue); margin-bottom:20px; }
+.info-callout a { text-decoration:underline; color:var(--blue); }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Settings</h1>
+      </div>
+    </div>
+
+    <div class="page-body" style="max-width:820px;">
+
+      <div class="section-nav">
+        <a href="#s-orders">Orders &amp; Invoices</a>
+        <a href="#s-shipping">Shipping &amp; COD</a>
+        <a href="#s-notifications">Notifications</a>
+        <a href="#s-admin">Admin Access</a>
+        <a href="#s-data">Data</a>
+      </div>
+
+      <div class="info-callout">
+        ◉ Legal identity, GSTIN, PAN, bank details, and invoice numbering are managed in
+        <a href="company.html">Company &amp; KYC</a>.
+      </div>
+
+      <!-- ── Orders & Invoices ─────────────────────────────────────────── -->
+      <div class="card settings-card" id="s-orders">
+        <div class="card-header"><h2>Orders &amp; Invoices</h2></div>
+        <div class="card-body">
+          <div class="form-grid" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label>Default Payment Terms</label>
+              <select id="f-payment-terms">
+                <option value="DUE_ON_RECEIPT">Due on Receipt</option>
+                <option value="NET7">Net 7 Days</option>
+                <option value="NET15">Net 15 Days</option>
+                <option value="NET30">Net 30 Days</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Currency</label>
+              <select id="f-currency">
+                <option value="INR">INR — Indian Rupee (₹)</option>
+                <option value="USD">USD — US Dollar ($)</option>
+                <option value="EUR">EUR — Euro (€)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Default Tax Rate (%)</label>
+              <select id="f-tax-rate">
+                <option value="0">0% — Exempt</option>
+                <option value="5">5%</option>
+                <option value="12">12%</option>
+                <option value="18">18%</option>
+                <option value="28">28%</option>
+              </select>
+              <span class="input-hint">Applied to new invoices by default</span>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="save-orders">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Shipping & COD ────────────────────────────────────────────── -->
+      <div class="card settings-card" id="s-shipping">
+        <div class="card-header"><h2>Shipping &amp; COD</h2></div>
+        <div class="card-body">
+          <div class="form-grid" style="margin-bottom:20px;">
+            <div class="form-group">
+              <label>Free Shipping Threshold (₹)</label>
+              <input type="number" id="f-free-shipping" min="0"/>
+              <span class="input-hint">Orders above this get free shipping</span>
+            </div>
+            <div class="form-group">
+              <label>Standard Shipping Charge (₹)</label>
+              <input type="number" id="f-shipping-charge" min="0"/>
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label class="toggle">
+              <input type="checkbox" id="f-cod-enabled"/>
+              <span class="toggle-track"></span>
+              <span style="font-size:13px;font-weight:500;color:var(--ink);">Enable Cash on Delivery (COD)</span>
+            </label>
+          </div>
+          <div class="form-group" style="max-width:240px;margin-bottom:20px;">
+            <label>COD Handling Charge (₹)</label>
+            <input type="number" id="f-cod-charge" min="0"/>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="save-shipping">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Notifications ─────────────────────────────────────────────── -->
+      <div class="card settings-card" id="s-notifications">
+        <div class="card-header">
+          <h2>Notifications</h2>
+          <span style="font-size:11px;color:var(--ink-muted);">In-panel alerts · email delivery not configured in prototype</span>
+        </div>
+        <div class="card-body">
+          <div class="notify-item">
+            <div><div class="ni-label">New Order Placed</div><div class="ni-sub">Alert when a customer places a new order</div></div>
+            <label class="toggle"><input type="checkbox" id="n-new-order"/><span class="toggle-track"></span></label>
+          </div>
+          <div class="notify-item">
+            <div><div class="ni-label">Low Stock Alert</div><div class="ni-sub">Alert when stock reaches the re-order level</div></div>
+            <label class="toggle"><input type="checkbox" id="n-low-stock"/><span class="toggle-track"></span></label>
+          </div>
+          <div class="notify-item">
+            <div><div class="ni-label">Return Request Submitted</div><div class="ni-sub">Alert when a customer submits a return</div></div>
+            <label class="toggle"><input type="checkbox" id="n-return"/><span class="toggle-track"></span></label>
+          </div>
+          <div class="notify-item">
+            <div><div class="ni-label">Order Issue Flagged</div><div class="ni-sub">Alert when an order issue is raised in the system</div></div>
+            <label class="toggle"><input type="checkbox" id="n-order-issue"/><span class="toggle-track"></span></label>
+          </div>
+          <div class="notify-item">
+            <div><div class="ni-label">Payment Failure</div><div class="ni-sub">Alert when a payment attempt fails at checkout</div></div>
+            <label class="toggle"><input type="checkbox" id="n-payment-fail"/><span class="toggle-track"></span></label>
+          </div>
+          <div class="form-actions" style="margin-top:14px;">
+            <button class="btn btn-primary" id="save-notifications">Save Preferences</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Admin Access ──────────────────────────────────────────────── -->
+      <div class="card settings-card" id="s-admin">
+        <div class="card-header"><h2>Admin Access</h2></div>
+        <div class="card-body">
+          <div style="background:#f5f5f3;border-radius:6px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:var(--ink-soft);line-height:1.6;">
+            Username is fixed to <strong>admin</strong>. Set a new password below, or reset to the default <strong>demo</strong> password.
+          </div>
+          <div class="form-grid" style="max-width:480px;margin-bottom:16px;">
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" id="f-new-pass" placeholder="Leave blank to keep current"/>
+            </div>
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <input type="password" id="f-confirm-pass"/>
+            </div>
+          </div>
+          <div id="pass-msg" style="font-size:12px;margin-bottom:12px;display:none;padding:8px 12px;border-radius:5px;background:#f5f5f3;"></div>
+          <div class="form-actions">
+            <button class="btn btn-outline" id="reset-pass">Reset to Default (demo)</button>
+            <button class="btn btn-primary" id="save-pass">Update Password</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Data Management ───────────────────────────────────────────── -->
+      <div class="card settings-card" id="s-data">
+        <div class="card-header"><h2>Data Management</h2></div>
+        <div class="card-body">
+          <div class="export-row">
+            <div><div class="er-label">Export Orders</div><div class="er-sub">Download all order records as JSON</div></div>
+            <button class="btn btn-outline btn-sm" id="export-orders">↓ Export</button>
+          </div>
+          <div class="export-row">
+            <div><div class="er-label">Export Returns</div><div class="er-sub">Download all return &amp; refund records as JSON</div></div>
+            <button class="btn btn-outline btn-sm" id="export-returns">↓ Export</button>
+          </div>
+          <div class="export-row">
+            <div><div class="er-label">Export Invoices</div><div class="er-sub">Download all invoice history as JSON</div></div>
+            <button class="btn btn-outline btn-sm" id="export-invoices">↓ Export</button>
+          </div>
+          <div class="export-row">
+            <div><div class="er-label">Export Inventory</div><div class="er-sub">Download current stock levels as JSON</div></div>
+            <button class="btn btn-outline btn-sm" id="export-inventory">↓ Export</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="danger-zone">
+            <h3>Danger Zone</h3>
+            <p>Reset all admin data back to demo defaults. This clears orders, inventory adjustments, returns, invoices, visitors, and settings stored in this browser. This cannot be undone.</p>
+            <button class="btn btn-danger" id="reset-data">↺ Reset to Demo Defaults</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('settings');
+
+const SETTINGS_KEY = 'nazrani:settings:v1';
+
+const DEFAULTS = {
+  paymentTerms:           'NET7',
+  currency:               'INR',
+  taxRate:                12,
+  freeShippingThreshold:  999,
+  shippingCharge:         60,
+  codEnabled:             true,
+  codCharge:              50,
+  notifyNewOrder:         true,
+  notifyLowStock:         true,
+  notifyReturn:           true,
+  notifyOrderIssue:       true,
+  notifyPaymentFail:      false,
+  adminPassword:          '',
+};
+
+function readSettings() {
+  try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); }
+  catch (_) { return Object.assign({}, DEFAULTS); }
+}
+function writeSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+
+function loadForm() {
+  const s = readSettings();
+  document.getElementById('f-payment-terms').value   = s.paymentTerms;
+  document.getElementById('f-currency').value        = s.currency;
+  document.getElementById('f-tax-rate').value        = String(s.taxRate);
+  document.getElementById('f-free-shipping').value   = s.freeShippingThreshold;
+  document.getElementById('f-shipping-charge').value = s.shippingCharge;
+  document.getElementById('f-cod-enabled').checked   = s.codEnabled;
+  document.getElementById('f-cod-charge').value      = s.codCharge;
+  document.getElementById('n-new-order').checked     = s.notifyNewOrder;
+  document.getElementById('n-low-stock').checked     = s.notifyLowStock;
+  document.getElementById('n-return').checked        = s.notifyReturn;
+  document.getElementById('n-order-issue').checked   = s.notifyOrderIssue;
+  document.getElementById('n-payment-fail').checked  = s.notifyPaymentFail;
+}
+
+function saveFeedback(btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Saved ✓'; btn.disabled = true;
+  setTimeout(function () { btn.textContent = orig; btn.disabled = false; }, 2000);
+}
+
+function exportJSON(key, filename) {
+  try {
+    const data = JSON.parse(localStorage.getItem(key) || '[]');
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) { alert('Export failed: ' + e.message); }
+}
+
+// ── Save handlers ──────────────────────────────────────────────────────────
+document.getElementById('save-orders').addEventListener('click', function () {
+  const s = readSettings();
+  s.paymentTerms = document.getElementById('f-payment-terms').value;
+  s.currency     = document.getElementById('f-currency').value;
+  s.taxRate      = parseFloat(document.getElementById('f-tax-rate').value) || 0;
+  writeSettings(s); saveFeedback(this);
+});
+
+document.getElementById('save-shipping').addEventListener('click', function () {
+  const s = readSettings();
+  s.freeShippingThreshold = parseFloat(document.getElementById('f-free-shipping').value) || 0;
+  s.shippingCharge        = parseFloat(document.getElementById('f-shipping-charge').value) || 0;
+  s.codEnabled            = document.getElementById('f-cod-enabled').checked;
+  s.codCharge             = parseFloat(document.getElementById('f-cod-charge').value) || 0;
+  writeSettings(s); saveFeedback(this);
+});
+
+document.getElementById('save-notifications').addEventListener('click', function () {
+  const s = readSettings();
+  s.notifyNewOrder    = document.getElementById('n-new-order').checked;
+  s.notifyLowStock    = document.getElementById('n-low-stock').checked;
+  s.notifyReturn      = document.getElementById('n-return').checked;
+  s.notifyOrderIssue  = document.getElementById('n-order-issue').checked;
+  s.notifyPaymentFail = document.getElementById('n-payment-fail').checked;
+  writeSettings(s); saveFeedback(this);
+});
+
+// ── Password ───────────────────────────────────────────────────────────────
+function showPassMsg(text, color) {
+  const msg = document.getElementById('pass-msg');
+  msg.style.display = 'block'; msg.style.color = color; msg.textContent = text;
+  setTimeout(function () { msg.style.display = 'none'; }, 3500);
+}
+document.getElementById('save-pass').addEventListener('click', function () {
+  const np = document.getElementById('f-new-pass').value;
+  const cp = document.getElementById('f-confirm-pass').value;
+  if (!np) { showPassMsg('No new password entered — nothing changed.', 'var(--ink-muted)'); return; }
+  if (np !== cp) { showPassMsg('Passwords do not match.', 'var(--red)'); return; }
+  if (np.length < 4) { showPassMsg('Password must be at least 4 characters.', 'var(--red)'); return; }
+  const s = readSettings(); s.adminPassword = np; writeSettings(s);
+  document.getElementById('f-new-pass').value = '';
+  document.getElementById('f-confirm-pass').value = '';
+  showPassMsg('Password updated. Use it on your next login.', 'var(--green)');
+});
+document.getElementById('reset-pass').addEventListener('click', function () {
+  const s = readSettings(); s.adminPassword = ''; writeSettings(s);
+  document.getElementById('f-new-pass').value = '';
+  document.getElementById('f-confirm-pass').value = '';
+  showPassMsg('Reset to default password (demo).', 'var(--ink-soft)');
+});
+
+// ── Exports ────────────────────────────────────────────────────────────────
+document.getElementById('export-orders').addEventListener('click', function () {
+  exportJSON('nazrani:orders:v1', 'nazrani-orders.json');
+});
+document.getElementById('export-returns').addEventListener('click', function () {
+  exportJSON('nazrani:returns:v1', 'nazrani-returns.json');
+});
+document.getElementById('export-invoices').addEventListener('click', function () {
+  exportJSON('nazrani:invoices:v1', 'nazrani-invoices.json');
+});
+document.getElementById('export-inventory').addEventListener('click', function () {
+  exportJSON('nazrani:inventory:v1', 'nazrani-inventory.json');
+});
+
+// ── Reset demo data ────────────────────────────────────────────────────────
+document.getElementById('reset-data').addEventListener('click', function () {
+  if (!confirm('This will clear all admin data and reload with demo defaults.\n\nThis cannot be undone. Continue?')) return;
+  ['nazrani:orders:v1','nazrani:inventory:v1','nazrani:reorder:v1',
+   'nazrani:returns:v1','nazrani:invoices:v1','nazrani:visitors:v1',
+   'nazrani:company:v1','nazrani:settings:v1'].forEach(function (k) {
+    localStorage.removeItem(k);
+  });
+  location.reload();
+});
+
+loadForm();
+</script>
+</body>
+</html>

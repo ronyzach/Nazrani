@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m http.server 8000)",
+      "Bash(curl -s \"http://localhost:8000/data/products.json\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d[0]['name'], '->', d[0].get\\('sourcedFrom'\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"about=%{http_code}\\\\n\" http://localhost:8000/about.html)",
+      "Bash(curl -s -o /dev/null -w \"product=%{http_code}\\\\n\" \"http://localhost:8000/product.html?id=p01\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(x['id'], x['name'], '->', x.get\\('sourcedFrom'\\)\\) for x in d]\")",
+      "Bash(curl -s \"http://localhost:8000/product.html\")",
+      "Bash(curl -s \"http://localhost:8000/about.html\")",
+      "Bash(curl -s \"http://localhost:8000/assets/data.js\")",
+      "WebFetch(domain:vanamoolika.org)",
+      "Bash(xargs ls *)",
+      "Bash(grep -iE \"\\\\.\\(png|jpg|jpeg|webp\\)$\")",
+      "Bash(xxd \"/c/Users/Rony Thomas Zach/AppData/Roaming/Claude/IndexedDB/https_claude.ai_0.indexeddb.blob/1/d9/d9f6\")",
+      "Bash(xxd \"/c/Users/Rony Thomas Zach/AppData/Roaming/Claude/IndexedDB/https_claude.ai_0.indexeddb.blob/1/d9/d9fa\")",
+      "Bash(cp \"/c/Users/Rony Thomas Zach/AppData/Roaming/Claude/IndexedDB/https_claude.ai_0.indexeddb.blob/1/da/da04\" /tmp/blob.bin)",
+      "Read(//tmp/**)",
+      "Bash(xxd /tmp/blob.bin)",
+      "Bash(xxd \"/d/2026/Claude Projects/Nazrani/assets/images/_incoming-amla-ragi.jpg\")",
+      "Bash(python -c ' *)",
+      "Bash(curl -s -o /dev/null -w \"amla=%{http_code} ragi=%{http_code}\\\\n\" \"http://localhost:8000/assets/images/p15-amla-powder.jpg\" \"http://localhost:8000/assets/images/p16-ragi-powder.jpg\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/__TRACKED_VAR__)",
+      "Bash(curl -s -o /dev/null -w \"article-spice=%{http_code}\\\\n\" \"http://localhost:8000/article.html?slug=tellicherry-and-the-spice-route\")",
+      "Bash(curl -s \"http://localhost:8000/data/articles.json\")",
+      "Bash(curl -s \"http://localhost:8000/data/journal.json\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/assets/images/__TRACKED_VAR__)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/__TRACKED_VAR__.html)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

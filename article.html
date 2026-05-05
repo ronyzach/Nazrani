@@ -13,9 +13,17 @@
 <div id="app-chrome"></div>
 
 <main id="main">
+  <section class="page-head page-head-compact" aria-label="Breadcrumb">
+    <div class="container" id="article-head"></div>
+  </section>
   <article class="article-body" aria-labelledby="article-title">
     <div class="container-narrow" id="article-body"></div>
   </article>
+  <section class="categories" aria-label="Continue">
+    <div class="container">
+      <div class="cat-grid" id="article-next"></div>
+    </div>
+  </section>
 </main>
 
 <div id="app-footer"></div>
@@ -23,6 +31,7 @@
 <script src="assets/data.js"></script>
 <script src="assets/data-service.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/tracker.js"></script>
 <script>
 (async function () {
   Nazrani.init({ active: 'journal', pageId: 'article' });
@@ -50,10 +59,10 @@
   document.title = article.title + ' · ' + DATA.brand.name + ' ' + DATA.brand.qualifier;
   Nazrani.setMeta('article');
 
+  document.getElementById('article-head').innerHTML = `
+    <div class="crumbs"><a href="index.html">Home</a> · <a href="journal.html">Journal</a> · ${esc(article.tag)}</div>`;
+
   body.innerHTML = `
-    <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.16em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:14px;">
-      <a href="index.html">Home</a> · <a href="journal.html">Journal</a> · ${esc(article.tag)}
-    </div>
     <div class="hero-img"><img src="${article.image}" alt="${esc(article.title)}" loading="eager"/></div>
     <div class="meta">
       <span class="tag-mono">${esc(article.tag)}</span>
@@ -65,6 +74,21 @@
     ${(article.body || []).map(p => '<p>' + esc(p) + '</p>').join('')}
     <div class="author">${esc(tpl(C.authorTemplate, { author: article.author, date: article.date }))}</div>
     <div style="margin-top:32px;"><a href="journal.html" class="btn btn-ghost">${esc(C.backLabel)}</a></div>`;
+
+  const nextTiles = [
+    { href: 'journal.html', name: 'Journal', desc: 'More from the field', cta: 'All articles' },
+    { href: 'shop.html',    name: 'Shop',    desc: 'Single-origin produce', cta: 'Browse the range' },
+    { href: 'origins.html', name: 'Origins', desc: 'Where every lot begins', cta: 'See the map' },
+  ];
+  document.getElementById('article-next').innerHTML = nextTiles.map((t, i) => `
+    <a href="${t.href}" class="catcard" aria-label="${esc(t.name)} — ${esc(t.cta)}">
+      <div class="meta">${String(i + 1).padStart(2, '0')} · ${esc(t.name).toUpperCase()}</div>
+      <div class="body">
+        <div class="name">${esc(t.name)}</div>
+        <div class="desc">${esc(t.desc)}</div>
+      </div>
+      <div class="cta">${esc(t.cta)} <span class="arr">→</span></div>
+    </a>`).join('');
 })();
 </script>
 </body>

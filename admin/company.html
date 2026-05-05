@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Company & KYC · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Company &amp; KYC</h1>
+      </div>
+      <div class="topbar-actions">
+        <span id="save-status" style="font-size:12px;color:var(--ink-muted);"></span>
+        <button class="btn btn-primary" id="save-btn">Save Changes</button>
+      </div>
+    </div>
+    <div class="page-body">
+
+      <!-- Completeness banner -->
+      <div id="completeness-banner" style="margin-bottom:20px;padding:12px 18px;border-radius:6px;font-size:13px;display:flex;align-items:center;gap:12px;"></div>
+
+      <div class="two-col" style="align-items:start;">
+        <!-- Left column -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <div class="card">
+            <div class="card-header"><h2>Legal Identity</h2></div>
+            <div class="card-body">
+              <div class="form-grid" style="gap:14px;">
+                <div class="form-group full">
+                  <label>Registered Business Name <span class="required">*</span></label>
+                  <input id="f-name" type="text" placeholder="e.g. Nazrani Heritage"/>
+                </div>
+                <div class="form-group full">
+                  <label>Trading Name / Brand</label>
+                  <input id="f-brand" type="text" placeholder="e.g. Nazrani Heritage"/>
+                </div>
+                <div class="form-group">
+                  <label>Business Type</label>
+                  <select id="f-type">
+                    <option>Sole Proprietorship</option>
+                    <option>Partnership</option>
+                    <option>LLP</option>
+                    <option>Private Limited</option>
+                    <option>One Person Company</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Year of Incorporation</label>
+                  <input id="f-year" type="text" placeholder="e.g. 2024"/>
+                </div>
+                <div class="form-group">
+                  <label>Authorised Signatory <span class="required">*</span></label>
+                  <input id="f-signatory" type="text" placeholder="Full name as on PAN"/>
+                </div>
+                <div class="form-group">
+                  <label>Designation</label>
+                  <input id="f-designation" type="text" placeholder="e.g. Founder &amp; Director"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>Registered Address</h2></div>
+            <div class="card-body">
+              <div class="form-grid" style="gap:14px;">
+                <div class="form-group full">
+                  <label>Address Line 1 <span class="required">*</span></label>
+                  <input id="f-addr1" type="text" placeholder="Building, street"/>
+                </div>
+                <div class="form-group full">
+                  <label>Address Line 2</label>
+                  <input id="f-addr2" type="text" placeholder="Area, landmark (optional)"/>
+                </div>
+                <div class="form-group">
+                  <label>City <span class="required">*</span></label>
+                  <input id="f-city" type="text" placeholder="e.g. Kottayam"/>
+                </div>
+                <div class="form-group">
+                  <label>State <span class="required">*</span></label>
+                  <input id="f-state" type="text" placeholder="e.g. Kerala"/>
+                </div>
+                <div class="form-group">
+                  <label>PIN Code <span class="required">*</span></label>
+                  <input id="f-pin" type="text" placeholder="686001" maxlength="6"/>
+                </div>
+                <div class="form-group">
+                  <label>Country</label>
+                  <input id="f-country" type="text" value="India" readonly style="background:#f5f5f3;"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>Contact Details</h2></div>
+            <div class="card-body">
+              <div class="form-grid" style="gap:14px;">
+                <div class="form-group">
+                  <label>Business Email <span class="required">*</span></label>
+                  <input id="f-email" type="email" placeholder="care@nazrani.com"/>
+                </div>
+                <div class="form-group">
+                  <label>Phone <span class="required">*</span></label>
+                  <input id="f-phone" type="tel" placeholder="98840 90151"/>
+                </div>
+                <div class="form-group full">
+                  <label>Website</label>
+                  <input id="f-website" type="text" placeholder="https://nazrani.com"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <div class="card">
+            <div class="card-header"><h2>Tax &amp; Compliance</h2></div>
+            <div class="card-body">
+              <div class="form-grid" style="gap:14px;">
+                <div class="form-group full">
+                  <label>GSTIN <span class="required">*</span></label>
+                  <input id="f-gstin" type="text" placeholder="32ABCDE1234F1Z5" maxlength="15" style="font-family:var(--mono);letter-spacing:0.06em;"/>
+                  <span class="input-hint">15-character GST Identification Number</span>
+                </div>
+                <div class="form-group full">
+                  <label>PAN</label>
+                  <input id="f-pan" type="text" placeholder="ABCDE1234F" maxlength="10" style="font-family:var(--mono);letter-spacing:0.06em;"/>
+                </div>
+                <div class="form-group full">
+                  <label>FSSAI Licence Number</label>
+                  <input id="f-fssai" type="text" placeholder="10019022000001" maxlength="14" style="font-family:var(--mono);letter-spacing:0.06em;"/>
+                  <span class="input-hint">Food Safety and Standards Authority of India</span>
+                </div>
+                <div class="form-group">
+                  <label>FSSAI Valid Until</label>
+                  <input id="f-fssai-exp" type="text" placeholder="e.g. Mar 2027"/>
+                </div>
+                <div class="form-group">
+                  <label>GST Filing Frequency</label>
+                  <select id="f-gst-freq">
+                    <option>Monthly (GSTR-1 + 3B)</option>
+                    <option>Quarterly (QRMP)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>Bank Details</h2>
+              <span style="font-size:11px;color:var(--ink-muted);">Used on invoices</span>
+            </div>
+            <div class="card-body">
+              <div class="form-grid" style="gap:14px;">
+                <div class="form-group full">
+                  <label>Account Holder Name</label>
+                  <input id="f-acc-name" type="text" placeholder="As registered with bank"/>
+                </div>
+                <div class="form-group">
+                  <label>Bank Name</label>
+                  <input id="f-bank" type="text" placeholder="e.g. Federal Bank"/>
+                </div>
+                <div class="form-group">
+                  <label>Branch</label>
+                  <input id="f-branch" type="text" placeholder="e.g. Kottayam Main"/>
+                </div>
+                <div class="form-group">
+                  <label>Account Number</label>
+                  <input id="f-accno" type="text" placeholder="••••••••••" style="font-family:var(--mono);"/>
+                </div>
+                <div class="form-group">
+                  <label>IFSC Code</label>
+                  <input id="f-ifsc" type="text" placeholder="FDRL0001234" style="font-family:var(--mono);letter-spacing:0.06em;" maxlength="11"/>
+                </div>
+                <div class="form-group">
+                  <label>UPI ID</label>
+                  <input id="f-upi" type="text" placeholder="nazrani@upi"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>Invoice Settings</h2></div>
+            <div class="card-body">
+              <div class="form-grid" style="gap:14px;">
+                <div class="form-group">
+                  <label>Invoice Prefix</label>
+                  <input id="f-inv-prefix" type="text" placeholder="INV" maxlength="6"/>
+                </div>
+                <div class="form-group">
+                  <label>Invoice Start Number</label>
+                  <input id="f-inv-start" type="number" placeholder="1001" min="1"/>
+                </div>
+                <div class="form-group full">
+                  <label>Invoice Footer Note</label>
+                  <textarea id="f-inv-note" rows="2" placeholder="e.g. Goods once sold will not be taken back. Subject to Kottayam jurisdiction."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('company');
+
+const FIELDS = [
+  'name','brand','type','year','signatory','designation',
+  'addr1','addr2','city','state','pin',
+  'email','phone','website',
+  'gstin','pan','fssai','fssai-exp','gst-freq',
+  'acc-name','bank','branch','accno','ifsc','upi',
+  'inv-prefix','inv-start','inv-note'
+];
+
+const REQUIRED = ['name','signatory','addr1','city','state','pin','email','phone','gstin'];
+
+function load() {
+  const co = Admin.getCompany();
+  FIELDS.forEach(function(f) {
+    const el = document.getElementById('f-'+f);
+    if (el && co[f] !== undefined) el.value = co[f];
+  });
+  updateBanner();
+}
+
+function updateBanner() {
+  const co = Admin.getCompany();
+  const missing = REQUIRED.filter(function(f){ return !co[f]; });
+  const banner = document.getElementById('completeness-banner');
+  if (!missing.length) {
+    banner.style.background = 'var(--green-light)';
+    banner.style.border = '1px solid #a8d5b5';
+    banner.innerHTML = '<span style="font-size:16px;">✓</span> <span>Company profile complete — invoices are ready to generate.</span>';
+  } else {
+    banner.style.background = 'var(--amber-light)';
+    banner.style.border = '1px solid #e8c97a';
+    banner.innerHTML = '<span style="font-size:16px;">⚠</span> <span><strong>' + missing.length + ' required field' + (missing.length>1?'s':'') + ' missing.</strong> Complete your profile to enable invoice generation.</span>';
+  }
+}
+
+document.getElementById('save-btn').addEventListener('click', function() {
+  const data = {};
+  FIELDS.forEach(function(f) {
+    const el = document.getElementById('f-'+f);
+    if (el) data[f] = el.value.trim();
+  });
+  // Build flat address string for invoice
+  data.address = [data.addr1, data.addr2, data.city, data.state + ' – ' + data.pin].filter(Boolean).join(', ');
+
+  Admin.saveCompany(data);
+  updateBanner();
+
+  const status = document.getElementById('save-status');
+  status.textContent = '✓ Saved ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  setTimeout(function(){ status.textContent=''; }, 3000);
+});
+
+load();
+</script>
+</body>
+</html>

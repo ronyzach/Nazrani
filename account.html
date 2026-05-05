@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/styles.css" />
+<style>
+.orders-table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+.orders-table th {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--ink-muted);
+  padding: 10px 14px; text-align: left;
+  border-bottom: 2px solid var(--rule);
+  white-space: nowrap; cursor: pointer; user-select: none;
+}
+.orders-table th:last-child { text-align: right; cursor: default; }
+.orders-table th .sort-icon {
+  display: inline-block; margin-left: 5px; opacity: 0.35; font-size: 10px;
+}
+.orders-table th.sorted .sort-icon { opacity: 1; color: var(--green-deep); }
+.orders-table th:hover:not(:last-child) { color: var(--ink); }
+.orders-table td {
+  padding: 16px 14px; border-bottom: 1px solid var(--rule-soft);
+  vertical-align: middle; font-size: 13px; color: var(--ink-soft);
+}
+.orders-table tr:last-child td { border-bottom: none; }
+.orders-table tr:hover td { background: var(--paper-warm); }
+.orders-table .td-date {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  color: var(--ink-muted); white-space: nowrap;
+}
+.orders-table .td-id {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--ink-muted);
+}
+.orders-table .td-items { max-width: 260px; }
+.orders-table .td-items .item-name { color: var(--ink); font-size: 13px; }
+.orders-table .td-items .item-more { color: var(--ink-muted); font-size: 11px; margin-top: 2px; }
+.orders-table .td-amount {
+  font-family: var(--serif); font-size: 16px; font-weight: 500;
+  color: var(--ink); white-space: nowrap;
+}
+.orders-table .td-awb {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+  color: var(--ink-muted); white-space: nowrap;
+}
+.orders-table .td-action { text-align: right; white-space: nowrap; }
+.orders-table .td-action a {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--green-deep);
+  border-bottom: 1px solid var(--green-soft); padding-bottom: 1px;
+}
+.orders-table .td-action a:hover { color: var(--ink); border-color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div id="app-chrome"></div>
+
+<main id="main">
+  <section class="page-head" aria-labelledby="page-title">
+    <div class="container" id="page-head"></div>
+  </section>
+  <section style="background:var(--paper);padding:56px 0 80px;border-bottom:1px solid var(--rule);">
+    <div class="container" id="orders-body"></div>
+  </section>
+  <section class="categories" style="padding:48px 0 32px;" aria-label="Continue">
+    <div class="container">
+      <div class="cat-grid" id="quick-links"></div>
+    </div>
+  </section>
+</main>
+
+<div id="app-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/data-service.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  const USER_KEY = 'nazrani:user:v1';
+  Nazrani.init({ active: '', pageId: 'account' });
+  const esc = Nazrani.esc;
+
+  DataService.seedDemoOrders();
+
+  let user;
+  try { user = JSON.parse(localStorage.getItem(USER_KEY)); } catch (_) { user = null; }
+  if (!user || user.guest) { location.replace('login.html?next=account.html'); return; }
+
+  const firstName = (user.name || 'there').split(' ')[0];
+  document.getElementById('page-head').innerHTML = `
+    <div class="crumbs"><a href="index.html">Home</a> · My Account</div>
+    <h1 id="page-title">Hello, <span class="accent">${esc(firstName)}.</span></h1>
+    <p class="lede" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <span>${esc(user.email || '')}</span>
+      <button class="btn btn-ghost" id="signout-btn" type="button" style="font-size:11px;padding:6px 14px;">Sign out</button>
+    </p>`;
+  document.getElementById('signout-btn').addEventListener('click', function () {
+    localStorage.removeItem(USER_KEY);
+    location.href = 'index.html';
+  });
+
+  const allOrders = DataService.getOrders();
+  const body = document.getElementById('orders-body');
+
+  if (!allOrders.length) {
+    body.innerHTML = `
+      <div class="eyebrow" style="margin-bottom:32px;">YOUR ORDERS</div>
+      <div style="text-align:center;padding:60px 0;">
+        <div style="font-family:var(--serif);font-size:36px;color:var(--ink-muted);margin-bottom:16px;">—</div>
+        <h2 style="font-family:var(--serif);font-weight:400;font-size:22px;margin:0 0 10px;">No orders yet</h2>
+        <p style="color:var(--ink-soft);margin:0 0 28px;">Your confirmed orders will appear here.</p>
+        <a href="shop.html" class="btn btn-primary">Browse the shop →</a>
+      </div>`;
+  } else {
+    function courierTrackUrl(courier, awb) {
+      if (!awb) return null;
+      const c = (courier || '').toLowerCase();
+      if (c.includes('delhivery'))  return 'https://www.delhivery.com/track/package/' + encodeURIComponent(awb);
+      if (c.includes('ekart'))      return 'https://ekartlogistics.com/shipmenttrack/' + encodeURIComponent(awb);
+      if (c.includes('xpressbees')) return 'https://www.xpressbees.com/shipment/tracking/?awb=' + encodeURIComponent(awb);
+      if (c.includes('shadowfax'))  return 'https://tracker.shadowfax.in/?id=' + encodeURIComponent(awb);
+      return 'https://www.google.com/search?q=' + encodeURIComponent((courier || 'courier') + ' track ' + awb);
+    }
+
+    function buildTrackingCell(o) {
+      if (!o.airwayBillNo) return '<span style="color:var(--ink-muted);">—</span>';
+      const url = courierTrackUrl(o.courier, o.airwayBillNo);
+      return (o.courier ? '<div style="font-size:11px;color:var(--ink-soft);margin-bottom:2px;">' + esc(o.courier) + '</div>' : '')
+        + '<div style="letter-spacing:.06em;">' + esc(o.airwayBillNo) + '</div>'
+        + (url ? '<a href="' + url + '" target="_blank" rel="noopener" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green-deep);border-bottom:1px solid var(--green-soft);padding-bottom:1px;margin-top:4px;display:inline-block;">Track →</a>' : '');
+    }
+
+    // Sort state
+    let sortCol = 'date', sortDir = -1; // -1 = desc, 1 = asc
+
+    function sortOrders(list) {
+      return list.slice().sort(function (a, b) {
+        if (sortCol === 'date')   return sortDir * (new Date(a.placed) - new Date(b.placed));
+        if (sortCol === 'amount') return sortDir * (a.total - b.total);
+        if (sortCol === 'items')  return sortDir * ((a.items||[]).length - (b.items||[]).length);
+        if (sortCol === 'status') return sortDir * (a.status||'').localeCompare(b.status||'');
+        return 0;
+      });
+    }
+
+    function renderTable() {
+      const sorted = sortOrders(allOrders);
+      const cols = [
+        { key: 'date',   label: 'Date' },
+        { key: 'order',  label: 'Order ID', nosort: true },
+        { key: 'items',  label: 'Items' },
+        { key: 'amount', label: 'Amount' },
+        { key: 'status', label: 'Status' },
+        { key: 'awb',    label: 'Tracking', nosort: true },
+        { key: 'action', label: '', nosort: true },
+      ];
+
+      const thead = cols.map(function (c) {
+        if (c.nosort) return '<th>' + esc(c.label) + '</th>';
+        const isActive = sortCol === c.key;
+        const icon = isActive ? (sortDir === -1 ? '↓' : '↑') : '↕';
+        return '<th class="' + (isActive ? 'sorted' : '') + '" data-col="' + c.key + '">'
+          + esc(c.label) + '<span class="sort-icon">' + icon + '</span></th>';
+      }).join('');
+
+      const tbody = sorted.map(function (o) {
+        const date = o.placed
+          ? new Date(o.placed).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+          : '—';
+        const items = o.items || [];
+        const first = items.slice(0, 2).map(function (it) {
+          return '<div class="item-name">' + esc(it.name) + ' <span style="color:var(--ink-muted);">×&thinsp;' + it.qty + '</span></div>';
+        }).join('');
+        const more = items.length > 2
+          ? '<div class="item-more">+' + (items.length - 2) + ' more item' + (items.length - 2 > 1 ? 's' : '') + '</div>'
+          : '';
+
+        return '<tr>'
+          + '<td class="td-date">' + esc(date) + '</td>'
+          + '<td class="td-id">' + esc(o.orderId) + '</td>'
+          + '<td class="td-items">' + first + more + '</td>'
+          + '<td class="td-amount">' + Nazrani.rupee(o.total) + '</td>'
+          + '<td><div class="status-pill" data-status="' + esc(o.status || 'CONFIRMED') + '"><span class="dot"></span>' + esc(o.status || 'CONFIRMED') + '</div></td>'
+          + '<td class="td-awb">' + buildTrackingCell(o) + '</td>'
+          + '<td class="td-action"><a href="order-confirmation.html?id=' + esc(o.orderId) + '">View details →</a></td>'
+          + '</tr>';
+      }).join('');
+
+      body.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;">
+          <div class="eyebrow">YOUR ORDERS</div>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--ink-muted);">${allOrders.length} order${allOrders.length === 1 ? '' : 's'}</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="orders-table" aria-label="Order history">
+            <thead><tr>${thead}</tr></thead>
+            <tbody>${tbody}</tbody>
+          </table>
+        </div>`;
+
+      // Wire sort headers
+      body.querySelectorAll('th[data-col]').forEach(function (th) {
+        th.addEventListener('click', function () {
+          const col = th.dataset.col;
+          if (sortCol === col) sortDir *= -1;
+          else { sortCol = col; sortDir = -1; }
+          renderTable();
+        });
+      });
+    }
+
+    renderTable();
+  }
+
+  document.getElementById('quick-links').innerHTML = [
+    { href: 'shop.html',    name: 'Shop',    desc: 'Single-origin produce',    cta: 'Browse the range' },
+    { href: 'faq.html',     name: 'Help',    desc: 'Returns & common queries',  cta: 'Read the FAQ' },
+    { href: 'contact.html', name: 'Contact', desc: 'Reach the team directly',   cta: 'Get in touch' },
+  ].map(function (t, i) {
+    return `<a href="${t.href}" class="catcard" aria-label="${esc(t.name)} — ${esc(t.cta)}">
+      <div class="meta">${String(i + 1).padStart(2, '0')} · ${esc(t.name).toUpperCase()}</div>
+      <div class="body"><div class="name">${esc(t.name)}</div><div class="desc">${esc(t.desc)}</div></div>
+      <div class="cta">${esc(t.cta)} <span class="arr">→</span></div>
+    </a>`;
+  }).join('');
+})();
+</script>
+</body>
+</html>

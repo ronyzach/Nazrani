@@ -13,7 +13,7 @@
 <div id="app-chrome"></div>
 
 <main id="main">
-  <section class="page-head" aria-labelledby="page-title">
+  <section class="page-head page-head-compact" aria-labelledby="page-title">
     <div class="container" id="page-head"></div>
   </section>
   <section class="cart-page">
@@ -190,7 +190,7 @@
       errBox.textContent = C.errors.missing;
       errBox.style.display = '';
       firstMissing.focus();
-      firstMissing.style.borderBottomColor = 'var(--error)';
+      firstMissing.style.borderColor = 'var(--error)';
       return;
     }
     const btn = document.getElementById('place-order');

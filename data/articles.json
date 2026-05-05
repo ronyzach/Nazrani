@@ -18,21 +18,22 @@
       "By eleven the sun is high and the conserve is glassy. The cooks transfer the pots off the wood-fire onto the cooling rack. Somebody puts on the radio. A child runs through with a kite. The day is, in some sense, ordinary. In another sense, it is precisely the kind of day I wish more of our customers could see — the one in which a 2,000-year-old recipe is held together not by certificates, but by the conscience of twelve women on woven mats and the woman who will not let them rush."
     ]
   },
-  "publishing-failed-audits": {
-    "slug": "publishing-failed-audits",
-    "tag": "The Standard",
+  "tellicherry-and-the-spice-route": {
+    "slug": "tellicherry-and-the-spice-route",
+    "tag": "Spice Trade",
     "date": "21 Apr 2026",
-    "title": "Why we publish every audit, even the failures",
-    "subtitle": "A failed audit isn't a marketing problem — it's a feature.",
-    "read": "4 min",
+    "title": "Tellicherry, and the peppercorn that funded fleets",
+    "subtitle": "How a single Malabar grading scale turned Indian black pepper into a global benchmark.",
+    "read": "5 min",
     "author": "Rony Zachariah",
-    "image": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=1600&q=80",
+    "image": "assets/images/p01-pepper.jpg",
     "body": [
-      "In Q2 last year, a routine surprise audit of one of our cardamom partners turned up a moisture reading of 14% — three points above our internal ceiling. The lot was already packed for dispatch. We delisted it. The supplier was unhappy. So was our P&L.",
-      "We could have moved that lot. Most retailers would have. The numbers were within FSSAI norms; it would have shipped, and nobody outside our quality team would have known. But the Nazrani Sourcing Standard is not the FSSAI standard, and the gap between them is the entire point of what we are building.",
-      "So we published the audit. We named the lot, the partner, the reading, the action taken. The supplier, to his enormous credit, asked us to also publish his explanation — an unseasonal pre-monsoon shower had soaked an outdoor curing run. We did. The next month's lot, dried in our cost, came in at 10.2%. We re-listed.",
-      "Two principles are at work here. The first is that an audit you can hide is not an audit; it is theatre. The second is that suppliers are not adversaries — they are partners with their own pressures. Publishing an honest failure publicly tells our customers what we will not do, and tells our suppliers that we will not stab them in the back over a bad week.",
-      "We have published nine failures in the last two years. We have published thirty-one passes. The standard remains the standard."
+      "Black pepper is, in the strict botanical sense, a small drupe — a fruit. It grows on a perennial vine that climbs whatever it can find, prefers monsoon rain and altitude, and yields a peppercorn whose pungency comes from a single compound: piperine. Almost every condition the plant prefers happens to converge on the western slopes of the Sahyadri, the mountain range we call the Western Ghats. This is not coincidence. The plant is from there.",
+      "For two thousand years, that geography was the point. Roman pepper bills survive from the first century AD; the demand was so steady, and the supply so concentrated on the Malabar coast, that pepper became the medium in which long-distance trade was denominated. Lots from the Kerala highlands moved through the port of Muziris and onward to the Levant, the Hejaz, and eventually Lisbon and Amsterdam. The peppercorn is, in some real sense, the molecule that built early-modern Europe.",
+      "But not all peppercorns travelled equally. The trade understood, well before the language of \"specifications\" existed, that pepper from certain hill-ranges was simply heavier, oilier, and more pungent than pepper from others. The British East India Company, headquartered for a stretch at Tellicherry on the north Malabar coast, codified what the older traders had already known: that the largest, fullest, blackest berries — sun-dried whole, hand-stemmed, garbled to remove broken or shrivelled fruit — could be sold at a clear premium. They invented a grade and named it after the town: Tellicherry Garbled Special Extra Bold. TGSEB.",
+      "The grade is still in use. To qualify, a peppercorn must be at least 4.75 mm in diameter, with a bulk density above roughly 560 g per litre and a volatile-oil content of at least 3.5%. Most commodity pepper, even from the same fields, falls short of these numbers. The TGSEB grade is, in effect, the top one or two percent of any harvest. It is what arrives in the small jars of the better European spice merchants. It is also, increasingly, what the better Indian kitchens have begun to ask for again.",
+      "What I find moving about the grade is how unromantic it is. There is no story. There is no certification body. There is just a sieve, a hand-held grading tray, and a generation of Malabar workers who learned to tell, by sight and weight in the palm, which berries belong on which pile. The grade is a residue of expertise — a specification that survives only because the people doing the work continue to honour it.",
+      "A vine is planted today in Wayanad, and the first commercially useful crop comes off it in year four or five. The vine will then yield for thirty or forty years, and during that span the world will change around it many times. The grading sieve, however, will not. The peppercorn that meets TGSEB in 2046 will be, by every meaningful measure, the same as the peppercorn that met it in 1846. A fact like that, in this century, deserves a quiet respect."
     ]
   },
   "name-worth-keeping": {
@@ -45,7 +46,7 @@
     "author": "Rony Zachariah",
     "image": "https://images.unsplash.com/photo-1601000938259-9e92002320b2?auto=format&fit=crop&w=1600&q=80",
     "body": [
-      "The word Nazrani comes from the Aramaic Naṣrāyā — followers of the Nazarene — and it travelled to the Malabar coast with the Apostle Thomas in 52 AD, or so the tradition holds. What it became, in Kerala over the centuries, was not principally a religious identity. It became a trading one.",
+      "The word Nazrani comes from the Aramaic Naṣrāyā — followers of the Nazarene. It is believed, in fact, that it was the long-established Jewish community of Kerala — Aramaic-speaking, settled along the Malabar coast since well before the Christian era — who first applied the term to the followers of the Apostle Thomas after his arrival in 52 AD. The name stuck. What it became, in Kerala over the centuries, was not principally a religious identity. It became a trading one — synonymous, in Malabar, with integrity, trust, and the merchant intelligence.",
       "Pre-modern Kerala's economy ran on long-distance trade. Spices moved north to the Mughal courts and west to the Levant. Pepper alone — black gold — funded fleets, wars, and the expansion of the Portuguese and the Dutch. The Malabar coast was, for two thousand years, one of the most cosmopolitan strips of land on earth.",
       "Within that economy, the Nazranis occupied an unusual position. They were Christians in a Hindu-majority society with substantial Jewish and Muslim trading communities; they spoke Malayalam but were literate in Syriac; they had European connections but were unmistakably Indian. They could move between groups that did not always trade directly with one another.",
       "What earned them their reputation, though, was a peculiar discipline around weights and descriptions. A Nazrani merchant, by repeated witness in Jewish, Arab, and Portuguese correspondence, would not sell short weight, would not adulterate, and would not — and this is the point that gets lost in the romanticism — undersell a customer who could be tricked. Goods passing through Nazrani hands were considered, by all sides, sound.",

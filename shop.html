@@ -13,7 +13,7 @@
 <div id="app-chrome"></div>
 
 <main id="main">
-  <section class="page-head" aria-labelledby="page-title">
+  <section class="page-head page-head-compact" aria-labelledby="page-title">
     <div class="container" id="page-head"></div>
   </section>
 
@@ -46,8 +46,7 @@
 
   document.getElementById('page-head').innerHTML = `
     <div class="crumbs"><a href="index.html">Home</a> · ${esc(C.crumbs)}</div>
-    <h1 id="page-title">${esc(C.titleA)}<span class="accent">${esc(C.titleB)}</span></h1>
-    <p class="lede">${esc(C.lede)}</p>`;
+    <h1 id="page-title">${esc(C.titleA)}<span class="accent">${esc(C.titleB)}</span></h1>`;
 
   const qs = new URLSearchParams(location.search);
   let activeCat  = qs.get('cat')  || 'All';

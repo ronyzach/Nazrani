@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Invoices · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+<style>
+.preview-wrap { display:none; }
+.preview-wrap.show { display:block; }
+@media print {
+  .no-print { display:none !important; }
+  .preview-wrap { display:block !important; }
+  body { background:#fff; }
+  .admin-wrap > *:not(.admin-main) { display:none; }
+  .admin-main { margin:0; }
+  .topbar, .page-body > .card { display:none; }
+  .page-body { padding:0; }
+}
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar" class="no-print"></div>
+  <main class="admin-main">
+    <div class="topbar no-print">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Invoices</h1>
+      </div>
+      <div class="topbar-actions">
+        <div style="display:inline-flex;align-items:center;border:1px solid var(--border-strong);border-radius:var(--radius);background:#fff;overflow:hidden;height:32px;">
+          <span style="font-size:11px;color:var(--ink-muted);font-weight:500;padding:0 8px;white-space:nowrap;">From</span>
+          <input type="date" id="date-from" style="font-size:12px;padding:0 8px;border:none;border-left:1px solid var(--border-strong);border-right:1px solid var(--border-strong);color:var(--ink);background:transparent;cursor:pointer;outline:none;height:100%;"/>
+          <span style="font-size:11px;color:var(--ink-muted);font-weight:500;padding:0 8px;white-space:nowrap;">To</span>
+          <input type="date" id="date-to" style="font-size:12px;padding:0 8px;border:none;border-left:1px solid var(--border-strong);border-right:1px solid var(--border-strong);color:var(--ink);background:transparent;cursor:pointer;outline:none;height:100%;"/>
+          <button id="date-reset" class="btn btn-ghost btn-sm" style="border-radius:0;border:none;height:100%;padding:0 12px;">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- ── Two-column layout ──────────────────────────────────────── -->
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;" class="no-print">
+
+        <!-- Invoice History -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Invoice History</h2>
+            <span id="inv-count" style="font-size:12px;color:var(--ink-muted);"></span>
+          </div>
+          <div class="card-body no-pad">
+            <table class="data-table" id="inv-history-table">
+              <thead><tr>
+                <th data-sort="invNo">Invoice No. <span class="si">↕</span></th>
+                <th data-sort="date">Date <span class="si">↕</span></th>
+                <th data-sort="orderId">Order <span class="si">↕</span></th>
+                <th data-sort="customer">Customer <span class="si">↕</span></th>
+                <th data-sort="total">Amount <span class="si">↕</span></th>
+                <th data-sort="status">Order Status <span class="si">↕</span></th>
+                <th></th>
+              </tr></thead>
+              <tbody id="inv-history-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Generate New Invoice -->
+        <div class="card" id="selector-card">
+          <div class="card-header"><h2>Generate Invoice</h2></div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--ink-muted);margin-bottom:14px;line-height:1.6;">
+              Active orders only — Confirmed, Yet to Ship, In Transit. Fulfilled &amp; cancelled are excluded.
+            </p>
+            <div class="form-group" style="margin-bottom:14px;">
+              <label>Select Order</label>
+              <select id="order-select" style="width:100%;">
+                <option value="">— Choose order —</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="generate-btn" style="width:100%;justify-content:center;">Generate Invoice →</button>
+            <div id="no-company-warn" style="display:none;margin-top:12px;padding:10px 12px;background:var(--amber-light);border:1px solid #e8c97a;border-radius:6px;font-size:12px;color:var(--amber);">
+              ⚠ Company details incomplete. <a href="company.html" style="color:var(--amber);font-weight:600;text-decoration:underline;">Set up KYC →</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Invoice Preview ─────────────────────────────────────────── -->
+      <div class="preview-wrap" id="preview-wrap">
+        <div class="card no-print" style="margin-bottom:16px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <span style="font-size:13px;color:var(--ink-soft);">Preview — use Print / Save PDF to export</span>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-ghost btn-sm" id="back-btn">← Back</button>
+            <button class="btn btn-primary btn-sm" onclick="window.print()">⎙ Print / Save PDF</button>
+          </div>
+        </div>
+        <div class="invoice-sheet" id="invoice-sheet"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('invoices');
+
+const esc = Admin.esc, rupee = Admin.rupee, fmtDate = Admin.fmtDate;
+const ORDERS_KEY  = 'nazrani:orders:v1';
+const INVOICE_KEY = 'nazrani:invoices:v1';
+const HSN = { Spices:'0904', Staples:'1006', Ayurveda:'1302', 'Health Foods':'1904', default:'2106' };
+const ACTIVE_STATUSES = ['CONFIRMED','YET TO SHIP','IN TRANSIT'];
+
+function readOrders() { try{ return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }catch(_){ return []; } }
+function readInvoices() { try{ return JSON.parse(localStorage.getItem(INVOICE_KEY)||'[]'); }catch(_){ return []; } }
+function saveInvoices(list) { localStorage.setItem(INVOICE_KEY, JSON.stringify(list)); }
+
+// ── Date range ────────────────────────────────────────────────────────────
+const dateFrom = document.getElementById('date-from');
+const dateTo   = document.getElementById('date-to');
+const today    = new Date();
+const yearStart = new Date(today.getFullYear(), 0, 1);
+function toYMD(d) { return d.toISOString().slice(0,10); }
+dateFrom.value = toYMD(yearStart);
+dateTo.value   = toYMD(today);
+
+// ── Populate order dropdown (active only) ─────────────────────────────────
+const allOrders = readOrders();
+const activeOrders = allOrders.filter(function(o){
+  return ACTIVE_STATUSES.indexOf(o.status||'CONFIRMED') !== -1;
+});
+const invoiceHistory = readInvoices();
+const invoicedOrderIds = invoiceHistory.map(function(i){ return i.orderId; });
+
+const sel = document.getElementById('order-select');
+activeOrders.forEach(function(o){
+  const opt = document.createElement('option');
+  opt.value = o.orderId;
+  const alreadyInvoiced = invoicedOrderIds.indexOf(o.orderId) !== -1;
+  opt.textContent = o.orderId
+    + ' — ' + ((o.customer&&o.customer.name)||'Guest')
+    + ' — ' + rupee(o.total)
+    + (alreadyInvoiced ? ' (invoiced)' : '');
+  sel.appendChild(opt);
+});
+
+if (activeOrders.length === 0) {
+  sel.innerHTML = '<option value="">No active orders available</option>';
+  document.getElementById('generate-btn').disabled = true;
+}
+
+// Pre-select from URL param
+const urlId = new URLSearchParams(location.search).get('id');
+if (urlId) { sel.value = urlId; }
+
+// ── Sort state ────────────────────────────────────────────────────────────
+var sortCol = 'date', sortDir = -1;
+
+function sortedInvoices(list) {
+  return list.slice().sort(function(a, b) {
+    if (sortCol === 'date')     return sortDir * (new Date(a.date) - new Date(b.date));
+    if (sortCol === 'total')    return sortDir * ((a.total||0) - (b.total||0));
+    if (sortCol === 'invNo')    return sortDir * (a.invNo||'').localeCompare(b.invNo||'');
+    if (sortCol === 'orderId')  return sortDir * (a.orderId||'').localeCompare(b.orderId||'');
+    if (sortCol === 'customer') return sortDir * (a.customerName||'').localeCompare(b.customerName||'');
+    if (sortCol === 'status')   return sortDir * (a.orderStatus||'').localeCompare(b.orderStatus||'');
+    return 0;
+  });
+}
+
+// ── History render ────────────────────────────────────────────────────────
+function renderHistory() {
+  const from = dateFrom.value ? new Date(dateFrom.value) : null;
+  const to   = dateTo.value   ? new Date(dateTo.value + 'T23:59:59') : null;
+  const filtered = readInvoices().filter(function(inv){
+    if (!inv.date) return true;
+    const d = new Date(inv.date);
+    return (!from || d >= from) && (!to || d <= to);
+  });
+  const list = sortedInvoices(filtered);
+
+  document.getElementById('inv-count').textContent = list.length + ' invoice' + (list.length===1?'':'s') + ' in range';
+
+  // Update sort indicators
+  document.querySelectorAll('th[data-sort]').forEach(function(th){
+    th.classList.toggle('sorted', th.dataset.sort === sortCol);
+    const si = th.querySelector('.si');
+    if (si) si.textContent = th.dataset.sort === sortCol ? (sortDir === -1 ? '↓' : '↑') : '↕';
+  });
+
+  document.getElementById('inv-history-body').innerHTML = list.length
+    ? list.map(function(inv){
+        const kid = 'km-' + inv.orderId.replace(/[^a-z0-9]/gi,'');
+        return '<tr>'
+          + '<td class="td-mono" style="font-size:12px;">' + esc(inv.invNo) + '</td>'
+          + '<td style="font-size:12px;">' + fmtDate(inv.date) + '</td>'
+          + '<td class="td-mono" style="font-size:12px;">' + esc(inv.orderId) + '</td>'
+          + '<td class="td-primary">' + esc(inv.customerName||'—') + '</td>'
+          + '<td class="td-amt">' + rupee(inv.total) + '</td>'
+          + '<td>' + Admin.statusBadge(inv.orderStatus||'CONFIRMED') + '</td>'
+          + '<td style="text-align:right;">'
+          +   '<div class="kebab-wrap">'
+          +     '<button class="kebab-btn" data-kebab="' + kid + '">⋮</button>'
+          +     '<div class="kebab-menu" id="' + kid + '">'
+          +       '<button data-view="' + esc(inv.orderId) + '">◧ View Invoice</button>'
+          +       '<button data-print="' + esc(inv.orderId) + '">⎙ Print / Save PDF</button>'
+          +     '</div>'
+          +   '</div>'
+          + '</td>'
+          + '</tr>';
+      }).join('')
+    : '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--ink-muted);">No invoices in selected range</td></tr>';
+
+  // Kebab toggles
+  document.querySelectorAll('.kebab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      const menu = document.getElementById(btn.dataset.kebab);
+      const isOpen = menu.classList.contains('open');
+      document.querySelectorAll('.kebab-menu.open').forEach(function(m){ m.classList.remove('open'); });
+      if (!isOpen) menu.classList.add('open');
+    });
+  });
+  document.querySelectorAll('[data-view]').forEach(function(btn){
+    btn.addEventListener('click', function(){ buildAndShow(btn.dataset.view, false); });
+  });
+  document.querySelectorAll('[data-print]').forEach(function(btn){
+    btn.addEventListener('click', function(){ buildAndShow(btn.dataset.print, true); });
+  });
+}
+
+// Close kebab on outside click
+document.addEventListener('click', function(){
+  document.querySelectorAll('.kebab-menu.open').forEach(function(m){ m.classList.remove('open'); });
+});
+
+// Sort header clicks
+document.querySelector('#inv-history-table').addEventListener('click', function(e){
+  const th = e.target.closest('th[data-sort]');
+  if (!th) return;
+  if (sortCol === th.dataset.sort) sortDir *= -1;
+  else { sortCol = th.dataset.sort; sortDir = -1; }
+  renderHistory();
+});
+
+// ── Invoice builder ───────────────────────────────────────────────────────
+function invNumber(orderId) {
+  return 'INV-' + (orderId||'').replace('NZR-','') + '-' + new Date().getFullYear();
+}
+function gstBreakup(subtotal) {
+  const taxable = Math.round(subtotal / 1.05);
+  const gst     = subtotal - taxable;
+  const half    = Math.round(gst / 2);
+  return { taxable, cgst: half, sgst: gst - half };
+}
+
+function buildAndShow(orderId, printAfter) {
+  const o = allOrders.find(function(x){ return x.orderId===orderId; });
+  if (!o) { alert('Order not found.'); return; }
+
+  const co = Admin.getCompany();
+  if (!co.name || !co.gstin) {
+    document.getElementById('no-company-warn').style.display = 'block';
+    return;
+  }
+  document.getElementById('no-company-warn').style.display = 'none';
+
+  const cust = o.customer || {}, addr = o.address || {};
+  const invNo   = invNumber(o.orderId);
+  const invDate = fmtDate(new Date().toISOString());
+  const { taxable, cgst, sgst } = gstBreakup(o.subtotal || o.total);
+
+  const itemRows = (o.items||[]).map(function(it) {
+    const hsn    = HSN[it.category] || HSN.default;
+    const unitEx = Math.round((it.unitPrice||it.price||0) / 1.05);
+    const lineEx = unitEx * (it.qty||1);
+    return '<tr>'
+      + '<td><strong>' + esc(it.name) + '</strong><div class="hsn">HSN: ' + hsn + ' · ' + esc(it.weight||'') + '</div></td>'
+      + '<td style="text-align:center;">' + (it.qty||1) + '</td>'
+      + '<td style="text-align:right;">' + rupee(unitEx) + '</td>'
+      + '<td style="text-align:right;">' + rupee(lineEx) + '</td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('invoice-sheet').innerHTML =
+    '<div class="invoice-header">'
+    + '<div class="invoice-from">'
+    +   '<div class="co-name">' + esc(co.name) + '</div>'
+    +   '<div class="co-sub">Heritage Produce</div>'
+    +   '<div class="co-addr">'
+    +     esc(co.address||'') + '<br>'
+    +     'GSTIN: ' + esc(co.gstin||'') + '<br>'
+    +     (co.fssai ? 'FSSAI: ' + esc(co.fssai) + '<br>' : '')
+    +     (co.email||'') + (co.phone ? ' · ' + esc(co.phone) : '')
+    +   '</div>'
+    + '</div>'
+    + '<div class="invoice-meta">'
+    +   '<div class="inv-no">TAX INVOICE</div>'
+    +   '<table><tbody>'
+    +     '<tr><td>Invoice No.</td><td><strong>' + esc(invNo) + '</strong></td></tr>'
+    +     '<tr><td>Invoice Date</td><td>' + invDate + '</td></tr>'
+    +     '<tr><td>Order Ref.</td><td>' + esc(o.orderId) + '</td></tr>'
+    +     '<tr><td>Payment</td><td>' + esc(((o.payment&&o.payment.method)||'—').toUpperCase()) + '</td></tr>'
+    +   '</tbody></table>'
+    + '</div>'
+    + '</div>'
+    + '<hr class="inv-divider"/>'
+    + '<div class="inv-to">'
+    +   '<div class="label">Bill To / Ship To</div>'
+    +   '<div class="name">' + esc(cust.name||'—') + '</div>'
+    +   '<div class="addr">'
+    +     esc(addr.line1||'') + (addr.line1 ? '<br>' : '')
+    +     esc(addr.city||'') + (addr.city ? ', ' : '') + esc(addr.state||'') + (addr.pincode ? ' – ' + esc(addr.pincode) : '') + '<br>'
+    +     (cust.email ? esc(cust.email) : '') + (cust.phone ? ' · ' + esc(cust.phone) : '')
+    +   '</div>'
+    + '</div>'
+    + '<table class="inv-table">'
+    +   '<thead><tr><th>Description</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Unit (ex. GST)</th><th style="text-align:right;">Amount</th></tr></thead>'
+    +   '<tbody>' + itemRows + '</tbody>'
+    + '</table>'
+    + '<div class="inv-totals"><table><tbody>'
+    +   '<tr><td style="color:var(--ink-muted);">Taxable amount</td><td>' + rupee(taxable) + '</td></tr>'
+    +   '<tr><td style="color:var(--ink-muted);">CGST @ 2.5%</td><td>' + rupee(cgst) + '</td></tr>'
+    +   '<tr><td style="color:var(--ink-muted);">SGST @ 2.5%</td><td>' + rupee(sgst) + '</td></tr>'
+    +   (o.shipping > 0 ? '<tr><td style="color:var(--ink-muted);">Shipping</td><td>' + rupee(o.shipping) + '</td></tr>' : '<tr><td style="color:var(--ink-muted);">Shipping</td><td>Free</td></tr>')
+    +   '<tr class="total-row"><td>Total Payable</td><td>' + rupee(o.total) + '</td></tr>'
+    + '</tbody></table></div>'
+    + '<div class="inv-footer">'
+    +   '<div><strong>' + esc(co.name||'Nazrani Heritage') + '</strong><br>This is a computer-generated invoice.</div>'
+    +   '<div style="text-align:right;">Authorised Signatory<br><br>' + esc(co.signatory||co.name||'') + '</div>'
+    + '</div>';
+
+  document.getElementById('selector-card').style.display = 'none';
+  document.getElementById('preview-wrap').classList.add('show');
+
+  if (printAfter) { setTimeout(function(){ window.print(); }, 300); }
+}
+
+// ── Generate button ───────────────────────────────────────────────────────
+document.getElementById('generate-btn').addEventListener('click', function() {
+  const id = sel.value;
+  if (!id) { alert('Please select an order.'); return; }
+
+  const co = Admin.getCompany();
+  if (!co.name || !co.gstin) {
+    document.getElementById('no-company-warn').style.display = 'block';
+    return;
+  }
+
+  const o = allOrders.find(function(x){ return x.orderId===id; });
+  if (!o) return;
+
+  // Save to history (upsert by orderId)
+  const history = readInvoices();
+  const existIdx = history.findIndex(function(i){ return i.orderId===id; });
+  const record = {
+    invNo:        invNumber(id),
+    orderId:      id,
+    customerName: (o.customer&&o.customer.name) || 'Guest',
+    total:        o.total,
+    date:         new Date().toISOString(),
+    orderStatus:  o.status || 'CONFIRMED',
+  };
+  if (existIdx > -1) history[existIdx] = record;
+  else history.push(record);
+  saveInvoices(history);
+
+  buildAndShow(id, false);
+  renderHistory();
+});
+
+// ── Back button ───────────────────────────────────────────────────────────
+document.getElementById('back-btn').addEventListener('click', function() {
+  document.getElementById('selector-card').style.display = '';
+  document.getElementById('preview-wrap').classList.remove('show');
+});
+
+// ── Date range listeners ──────────────────────────────────────────────────
+dateFrom.addEventListener('change', renderHistory);
+dateTo.addEventListener('change', renderHistory);
+document.getElementById('date-reset').addEventListener('click', function(){
+  dateFrom.value = toYMD(yearStart);
+  dateTo.value   = toYMD(today);
+  renderHistory();
+});
+
+renderHistory();
+</script>
+</body>
+</html>

@@ -13,7 +13,7 @@
 <div id="app-chrome"></div>
 
 <main id="main">
-  <section class="page-head" aria-labelledby="page-title">
+  <section class="page-head page-head-compact" aria-labelledby="page-title">
     <div class="container" id="page-head"></div>
   </section>
   <section class="cart-page">
@@ -119,7 +119,7 @@
       });
       line.querySelector('[data-remove]').addEventListener('click', () => {
         DataService.removeFromCart(id);
-        Nazrani.showToast(ui.toast.removed);
+        Nazrani.showToast(ui.toast.removed, { action: false });
         render();
       });
     });

@@ -20,6 +20,10 @@
     </div>
   </section>
 
+  <section class="reviews-section" id="reviews-wrap" style="display:none;">
+    <div class="container" id="reviews-body"></div>
+  </section>
+
   <section class="related" id="related-wrap" style="display:none;" aria-labelledby="related-title">
     <div class="container">
       <div class="head" id="related-head"></div>
@@ -34,6 +38,7 @@
 <script src="assets/illustrations.js"></script>
 <script src="assets/data-service.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/tracker.js"></script>
 <script>
 (async function () {
   Nazrani.init({ active: 'shop', pageId: 'product' });
@@ -110,6 +115,14 @@
             ).join('')}
           </div>
         </div>
+
+        ${product.sourcedFrom ? `
+        <div class="story-box">
+          <h3>Source</h3>
+          <p style="font-family:var(--serif);font-size:18px;color:var(--ink);margin:0;">
+            <a href="about.html#partners" style="color:var(--green-deep);text-decoration:none;border-bottom:1px solid var(--green-deep);">${esc(product.sourcedFrom)}</a>
+          </p>
+        </div>` : ''}
       </div>
     </div>`;
 
@@ -132,6 +145,97 @@
       this.textContent = tpl(C.ctaTemplate, { weight: product.weight });
     }, 2200);
   });
+
+  // ---- Reviews ----
+  function starsHTML(n, total) {
+    let s = '';
+    for (let i = 1; i <= 5; i++) s += '<span class="' + (i <= n ? '' : 'stars-empty') + '">★</span>';
+    return '<span class="stars">' + s + '</span>' + (total !== undefined ? '<span> ' + total + ' review' + (total === 1 ? '' : 's') + '</span>' : '');
+  }
+
+  function renderReviews() {
+    const reviews = DataService.getReviews(product.id);
+    const wrap = document.getElementById('reviews-wrap');
+    const body = document.getElementById('reviews-body');
+    wrap.style.display = '';
+
+    const avg = reviews.length
+      ? Math.round(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length * 10) / 10
+      : 0;
+
+    const user = (() => { try { return JSON.parse(localStorage.getItem('nazrani:user:v1')); } catch(_) { return null; } })();
+    const canReview = user && !user.guest;
+
+    const cards = reviews.map(function (r) {
+      return '<div class="review-card">'
+        + '<div class="rc-head">'
+        + '<span class="rc-author">' + esc(r.author) + '</span>'
+        + '<span class="rc-date">' + esc(r.date) + '</span>'
+        + '</div>'
+        + '<div class="stars" style="margin-bottom:8px;">' + '★'.repeat(r.rating) + '<span class="stars-empty">' + '★'.repeat(5 - r.rating) + '</span></div>'
+        + '<div class="rc-body">' + esc(r.body) + '</div>'
+        + '</div>';
+    }).join('');
+
+    const formHTML = canReview ? `
+      <div class="review-form" id="review-form-wrap">
+        <h3>Write a review</h3>
+        <div class="star-picker" id="star-picker" role="group" aria-label="Your rating">
+          ${[1,2,3,4,5].map(i => '<button type="button" data-star="' + i + '" aria-label="' + i + ' star' + (i>1?'s':'') + '">★</button>').join('')}
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label class="label">Your name</label>
+          <input id="rv-name" type="text" class="input" placeholder="e.g. Meera R., Kochi" maxlength="60"/>
+        </div>
+        <div class="field" style="margin-bottom:16px;">
+          <label class="label">Your review</label>
+          <textarea id="rv-body" class="input" rows="4" placeholder="What did you think?" maxlength="500" style="resize:vertical;"></textarea>
+        </div>
+        <button class="btn btn-primary" id="rv-submit" type="button">Submit review</button>
+        <div id="rv-error" style="color:var(--error);font-size:12px;margin-top:8px;display:none;"></div>
+      </div>` : `
+      <div class="review-form" style="text-align:center;padding:24px 0 0;">
+        <p style="color:var(--ink-soft);font-size:14px;margin:0 0 12px;">
+          <a href="login.html?next=product.html%3Fid%3D${product.id}" style="color:var(--green-deep);border-bottom:1px solid var(--green-soft);">Sign in</a> to leave a review.
+        </p>
+      </div>`;
+
+    body.innerHTML = `
+      <div class="reviews-head">
+        <h2>Customer reviews</h2>
+        ${reviews.length ? '<div class="rating-summary">' + starsHTML(Math.round(avg), reviews.length) + ' · ' + avg + ' avg</div>' : ''}
+      </div>
+      ${reviews.length ? cards : '<p style="color:var(--ink-muted);font-size:14px;padding:8px 0 24px;">No reviews yet — be the first.</p>'}
+      ${formHTML}`;
+
+    // Star picker
+    const picker = document.getElementById('star-picker');
+    if (picker) {
+      let selected = 0;
+      picker.querySelectorAll('button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          selected = parseInt(btn.dataset.star, 10);
+          picker.querySelectorAll('button').forEach(function (b) {
+            b.classList.toggle('on', parseInt(b.dataset.star, 10) <= selected);
+          });
+        });
+      });
+
+      document.getElementById('rv-submit').addEventListener('click', function () {
+        const errEl = document.getElementById('rv-error');
+        const name  = (document.getElementById('rv-name').value || '').trim();
+        const body2 = (document.getElementById('rv-body').value || '').trim();
+        if (!selected) { errEl.textContent = 'Please choose a star rating.'; errEl.style.display = ''; return; }
+        if (!name)     { errEl.textContent = 'Please enter your name.'; errEl.style.display = ''; return; }
+        if (!body2)    { errEl.textContent = 'Please write a short review.'; errEl.style.display = ''; return; }
+        errEl.style.display = 'none';
+        DataService.addReview(product.id, { author: name, rating: selected, body: body2 });
+        Nazrani.showToast('Review submitted — thank you!', { action: false });
+        renderReviews();
+      });
+    }
+  }
+  renderReviews();
 
   const related = await DataService.getRelated(product.id, 4);
   if (related.length) {

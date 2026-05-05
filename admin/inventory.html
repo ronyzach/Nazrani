@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Inventory · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Inventory</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-outline" id="reset-btn">Reset to defaults</button>
+        <button class="btn btn-primary" id="save-btn">Save all changes</button>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="stat-grid" id="inv-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;"></div>
+      <div class="card">
+        <div class="card-header">
+          <h2>Stock Levels</h2>
+          <div class="search-box" style="max-width:260px;">
+            <span style="color:var(--ink-muted);font-size:14px;">⌕</span>
+            <input id="search" type="text" placeholder="Filter products…"/>
+          </div>
+        </div>
+        <div class="card-body no-pad">
+          <table class="data-table" id="inv-table">
+            <thead><tr>
+              <th>Product</th><th>Category</th><th>Weight</th>
+              <th>Current Stock</th><th>Re-order Level</th><th>Stock Bar</th><th>Adjust</th>
+            </tr></thead>
+            <tbody id="inv-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('inventory');
+
+const products = window.DATA.products || [];
+const DEFAULT_STOCK = 50;
+const DEFAULT_REORDER = 10;
+const MID = 25;
+let draft = {}, reorderDraft = {};
+
+function loadDraft() {
+  const inv = Admin.getInventory();
+  const rl  = Admin.getReorderLevels();
+  products.forEach(function(p) {
+    draft[p.id]        = inv[p.id] !== undefined ? inv[p.id] : DEFAULT_STOCK;
+    reorderDraft[p.id] = rl[p.id]  !== undefined ? rl[p.id]  : DEFAULT_REORDER;
+  });
+}
+
+function renderStats() {
+  const atOrBelow  = products.filter(function(p){ return draft[p.id] <= reorderDraft[p.id]; }).length;
+  const outOfStock = products.filter(function(p){ return draft[p.id] === 0; }).length;
+  const healthy    = products.filter(function(p){ return draft[p.id] > reorderDraft[p.id]; }).length;
+  document.getElementById('inv-stats').innerHTML = [
+    { label: 'Total SKUs',       value: products.length, sub: 'Products tracked' },
+    { label: 'At / Below Re-order', value: atOrBelow, sub: outOfStock + ' out of stock', highlight: atOrBelow > 0 },
+    { label: 'Healthy Stock',    value: healthy, sub: 'Above re-order level' },
+  ].map(function(s){
+    return '<div class="stat-card"><div class="label">' + s.label + '</div>'
+      + '<div class="value" style="' + (s.highlight && s.value > 0 ? 'color:var(--amber);' : '') + '">' + s.value + '</div>'
+      + '<div class="sub">' + s.sub + '</div></div>';
+  }).join('');
+}
+
+function renderTable() {
+  const q = (document.getElementById('search').value||'').toLowerCase();
+  const list = products.filter(function(p){ return !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q); });
+  const esc = Admin.esc;
+
+  document.getElementById('inv-body').innerHTML = list.map(function(p) {
+    const qty    = draft[p.id] !== undefined ? draft[p.id] : DEFAULT_STOCK;
+    const reorder = reorderDraft[p.id] !== undefined ? reorderDraft[p.id] : DEFAULT_REORDER;
+    const pct    = Math.min(100, Math.round(qty / DEFAULT_STOCK * 100));
+    const atRisk = qty <= reorder;
+    const fillClass = qty === 0 ? 'low' : atRisk ? 'mid' : '';
+    return '<tr' + (atRisk && qty > 0 ? ' style="background:#fffbf0;"' : '') + '>'
+      + '<td><div class="td-primary">' + esc(p.name) + '</div><div style="font-size:11px;color:var(--ink-muted);">' + esc(p.origin||'') + '</div></td>'
+      + '<td><span class="tag">' + esc(p.category) + '</span></td>'
+      + '<td style="font-size:12px;color:var(--ink-muted);">' + esc(p.weight||'—') + '</td>'
+      + '<td><strong style="font-size:15px;' + (atRisk ? 'color:var(--amber);' : '') + '">' + qty + '</strong> <span style="font-size:11px;color:var(--ink-muted);">units</span></td>'
+      + '<td>'
+      +   '<input type="number" min="0" value="' + reorder + '" data-reorder="' + esc(p.id) + '" style="width:64px;text-align:center;font-size:13px;padding:5px 8px;" title="Re-order when stock hits this level"/>'
+      + '</td>'
+      + '<td style="min-width:140px;">'
+      +   '<div class="stock-bar-wrap">'
+      +     '<div class="stock-bar"><div class="stock-bar-fill ' + fillClass + '" style="width:' + pct + '%;"></div></div>'
+      +     '<span style="font-size:11px;color:var(--ink-muted);width:32px;text-align:right;">' + pct + '%</span>'
+      +   '</div>'
+      + '</td>'
+      + '<td>'
+      +   '<div style="display:flex;align-items:center;gap:6px;">'
+      +     '<button class="btn btn-ghost btn-sm btn-icon" data-id="' + esc(p.id) + '" data-delta="-5">−5</button>'
+      +     '<button class="btn btn-ghost btn-sm btn-icon" data-id="' + esc(p.id) + '" data-delta="-1">−1</button>'
+      +     '<input type="number" min="0" value="' + qty + '" data-input="' + esc(p.id) + '" style="width:64px;text-align:center;font-size:13px;padding:5px 8px;">'
+      +     '<button class="btn btn-ghost btn-sm btn-icon" data-id="' + esc(p.id) + '" data-delta="+1">+1</button>'
+      +     '<button class="btn btn-ghost btn-sm btn-icon" data-id="' + esc(p.id) + '" data-delta="+10">+10</button>'
+      +   '</div>'
+      + '</td>'
+      + '</tr>';
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink-muted);">No products found</td></tr>';
+
+  document.querySelectorAll('[data-delta]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const id = btn.dataset.id;
+      const delta = parseInt(btn.dataset.delta, 10);
+      draft[id] = Math.max(0, (draft[id] || 0) + delta);
+      renderTable(); renderStats();
+    });
+  });
+  document.querySelectorAll('[data-input]').forEach(function(inp) {
+    inp.addEventListener('change', function() {
+      draft[inp.dataset.input] = Math.max(0, parseInt(inp.value, 10) || 0);
+      renderStats();
+    });
+  });
+  document.querySelectorAll('[data-reorder]').forEach(function(inp) {
+    inp.addEventListener('change', function() {
+      reorderDraft[inp.dataset.reorder] = Math.max(0, parseInt(inp.value, 10) || 0);
+      renderStats();
+    });
+  });
+}
+
+document.getElementById('save-btn').addEventListener('click', function() {
+  Admin.saveInventory(draft);
+  Admin.saveReorderLevels(reorderDraft);
+  this.textContent = '✓ Saved';
+  setTimeout(function() { document.getElementById('save-btn').textContent = 'Save all changes'; }, 1800);
+});
+
+document.getElementById('reset-btn').addEventListener('click', function() {
+  if (!confirm('Reset all stock levels to ' + DEFAULT_STOCK + ' units?')) return;
+  products.forEach(function(p) { draft[p.id] = DEFAULT_STOCK; });
+  renderTable(); renderStats();
+});
+
+document.getElementById('search').addEventListener('input', renderTable);
+
+loadDraft(); renderStats(); renderTable();
+</script>
+</body>
+</html>

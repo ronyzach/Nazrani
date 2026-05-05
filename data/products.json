@@ -8,7 +8,7 @@
     "price": 480,
     "weight": "250g",
     "gi": true,
-    "organic": "PGS-India",
+    "organic": "India Organic",
     "category": "Spices",
     "label": "pepper, hand-graded",
     "image": "assets/images/p01-pepper.jpg",
@@ -26,7 +26,8 @@
       "Moisture": "≤ 11%",
       "Foreign Matter": "≤ 0.2%"
     },
-    "weightGrams": 250
+    "weightGrams": 250,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p02",
@@ -55,7 +56,8 @@
       "Moisture": "≤ 11%",
       "Empty Pods": "≤ 1%"
     },
-    "weightGrams": 100
+    "weightGrams": 100,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p03",
@@ -84,7 +86,8 @@
       "Foreign Matter": "≤ 0.5%"
     },
     "image": "assets/images/p03-turmeric.jpg",
-    "weightGrams": 200
+    "weightGrams": 200,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p04",
@@ -95,7 +98,7 @@
     "price": 420,
     "weight": "1kg",
     "gi": true,
-    "organic": "PGS-India",
+    "organic": "India Organic",
     "category": "Staples",
     "label": "aromatic short-grain rice",
     "stock": 240,
@@ -113,7 +116,8 @@
       "Origin": "Mananthavady, Wayanad"
     },
     "image": "assets/images/p04-gandhakasala-rice.jpg",
-    "weightGrams": 1000
+    "weightGrams": 1000,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p05",
@@ -124,7 +128,7 @@
     "price": 380,
     "weight": "1kg",
     "gi": true,
-    "organic": "PGS-India",
+    "organic": "India Organic",
     "category": "Staples",
     "label": "aromatic biriyani rice",
     "stock": 210,
@@ -142,7 +146,8 @@
       "Origin": "Wayanad plateau"
     },
     "image": "assets/images/p05-jeerakasala-rice.jpg",
-    "weightGrams": 1000
+    "weightGrams": 1000,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p06",
@@ -153,7 +158,7 @@
     "price": 240,
     "weight": "1kg",
     "gi": true,
-    "organic": "PGS-India",
+    "organic": "India Organic",
     "category": "Staples",
     "label": "red matta rice",
     "stock": 410,
@@ -171,7 +176,8 @@
       "Fibre": "2.8 g / 100g"
     },
     "image": "assets/images/p06-red-rice.jpg",
-    "weightGrams": 1000
+    "weightGrams": 1000,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p07",
@@ -200,7 +206,8 @@
       "Origin": "Village trees, Wayanad"
     },
     "image": "assets/images/p07-jackfruit-powder.jpg",
-    "weightGrams": 200
+    "weightGrams": 200,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p08",
@@ -229,7 +236,8 @@
       "Excipients": "None"
     },
     "image": "assets/images/p08-curcuma.jpg",
-    "weightGrams": 100
+    "weightGrams": 100,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p09",
@@ -258,7 +266,8 @@
       "Quill Form": "Hand-rolled, 8–10 cm"
     },
     "image": "assets/images/p09-cinnamon.jpg",
-    "weightGrams": 100
+    "weightGrams": 100,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p10",
@@ -287,7 +296,8 @@
       "Gluten": "Free"
     },
     "image": "assets/images/p10-arrowroot.jpg",
-    "weightGrams": 250
+    "weightGrams": 250,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p11",
@@ -298,7 +308,7 @@
     "price": 220,
     "weight": "200g",
     "gi": false,
-    "organic": "PGS-India",
+    "organic": "India Organic",
     "category": "Spices",
     "label": "foeniculum vulgare",
     "stock": 140,
@@ -316,7 +326,8 @@
       "Variety": "Sweet, large-seeded"
     },
     "image": "assets/images/p11-fennel.jpg",
-    "weightGrams": 200
+    "weightGrams": 200,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p12",
@@ -345,7 +356,8 @@
       "Preservative": "None"
     },
     "image": "assets/images/p12-chyavanaprasam.jpg",
-    "weightGrams": 500
+    "weightGrams": 500,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p13",
@@ -374,7 +386,8 @@
       "Origin": "Kerala smallholdings"
     },
     "image": "assets/images/p13-banana-powder.jpg",
-    "weightGrams": 250
+    "weightGrams": 250,
+    "sourcedFrom": "Vanamoolika"
   },
   {
     "id": "p14",
@@ -403,6 +416,7 @@
       "Adulterants": "Nil"
     },
     "image": "assets/images/p14-kashmiri-chilly.jpg",
-    "weightGrams": 200
+    "weightGrams": 200,
+    "sourcedFrom": "Vanamoolika"
   }
 ]

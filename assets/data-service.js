@@ -282,6 +282,20 @@
     return order;
   }
 
+  /** @endpoint  GET /api/orders */
+  function getOrders() {
+    try {
+      return JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    } catch (_) { return []; }
+  }
+
+  /** Overwrite localStorage orders with the curated demo set from DATA.demoOrders. */
+  function seedDemoOrders() {
+    try {
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(DB().demoOrders || []));
+    } catch (_) { /* noop */ }
+  }
+
   /** @endpoint  GET /api/orders/:orderId */
   function getOrder(orderId) {
     try {
@@ -303,6 +317,33 @@
   }
 
   // ============================================================
+  // REVIEWS
+  // ============================================================
+  const REVIEWS_KEY = 'nazrani:reviews:v1';
+
+  /** @endpoint  GET /api/products/:id/reviews */
+  function getReviews(productId) {
+    const seed = (DB().seedReviews || {})[productId] || [];
+    try {
+      const store = JSON.parse(localStorage.getItem(REVIEWS_KEY) || '{}');
+      const local = (store[productId] || []);
+      return local.concat(seed);
+    } catch (_) { return seed; }
+  }
+
+  /** @endpoint  POST /api/products/:id/reviews { author, rating, body } */
+  function addReview(productId, review) {
+    try {
+      const store = JSON.parse(localStorage.getItem(REVIEWS_KEY) || '{}');
+      if (!store[productId]) store[productId] = [];
+      store[productId].unshift(Object.assign({}, review, {
+        date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      }));
+      localStorage.setItem(REVIEWS_KEY, JSON.stringify(store));
+    } catch (_) { /* noop */ }
+  }
+
+  // ============================================================
   // FORMS
   // ============================================================
 
@@ -320,6 +361,120 @@
   }
 
   // ============================================================
+  // DEMO SEEDS  (run once; only if localStorage keys are absent)
+  // ============================================================
+  (function seedDemoDefaults() {
+    // Patch issue flags onto existing demo orders if not already present
+    try {
+      var stored = JSON.parse(localStorage.getItem('nazrani:orders:v1') || '[]');
+      var patched = false;
+      stored.forEach(function(o) {
+        if (o.orderId === 'NZR-S1DEMO' && !o.issue) {
+          o.issue = true; o.issueType = 'ADDRESS_ISSUE';
+          o.issueNotes = 'Pincode 682001 flagged as unserviceable by courier partner. Awaiting alternate address from customer.';
+          patched = true;
+        }
+        if (o.orderId === 'NZR-S2DEMO' && !o.issue) {
+          o.issue = true; o.issueType = 'LOGISTICS_DELAY';
+          o.issueNotes = 'Shipment EK491500004IN has not moved in 3 days. Escalation ticket raised with India Post.';
+          patched = true;
+        }
+      });
+      if (patched) localStorage.setItem('nazrani:orders:v1', JSON.stringify(stored));
+    } catch(_) {}
+
+    try {
+      // 2 products below their re-order level
+      if (!localStorage.getItem('nazrani:inventory:v1')) {
+        var inv = { p01: 6, p02: 4 };   // p01=Tellicherry Pepper, p02=Green Cardamom
+        localStorage.setItem('nazrani:inventory:v1', JSON.stringify(inv));
+      }
+      if (!localStorage.getItem('nazrani:reorder:v1')) {
+        var rl = { p01: 15, p02: 12 };
+        localStorage.setItem('nazrani:reorder:v1', JSON.stringify(rl));
+      }
+    } catch (_) {}
+
+    try {
+      // 3 demo return requests at different stages
+      if (!localStorage.getItem('nazrani:returns:v1')) {
+        var returns = [
+          {
+            returnId: 'RTN-0001', orderId: 'NZR-S3DEMO',
+            customerName: 'Demo User', customerEmail: 'demo@gmail.com', customerPhone: '9884090151',
+            items: [{ name: 'Chyawanprash', qty: 1, unitPrice: 890, lineTotal: 890, weight: '500g' }],
+            reason: 'DAMAGED', reasonNote: 'Product arrived with broken seal. Contents partially spilled.',
+            requestedOn: '2026-04-30T10:15:00.000Z',
+            status: 'REFUND_COMPLETED',
+            refundAmount: 890, refundMethod: 'ORIGINAL',
+            resolvedOn: '2026-05-02T14:30:00.000Z', adminNotes: 'Verified damage via customer photo. Full refund approved.'
+          },
+          {
+            returnId: 'RTN-0002', orderId: 'NZR-S4DEMO',
+            customerName: 'Demo User', customerEmail: 'demo@gmail.com', customerPhone: '9884090151',
+            items: [{ name: 'Wayanad Turmeric Powder', qty: 1, unitPrice: 260, lineTotal: 260, weight: '200g' }],
+            reason: 'QUALITY_ISSUE', reasonNote: 'Colour and aroma not matching product description. Seems adulterated.',
+            requestedOn: '2026-04-25T09:00:00.000Z',
+            status: 'APPROVED',
+            refundAmount: 260, refundMethod: 'ORIGINAL',
+            resolvedOn: '2026-04-26T11:00:00.000Z', adminNotes: 'Return approved. Awaiting item pickup before initiating refund.'
+          },
+          {
+            returnId: 'RTN-0003', orderId: 'NZR-S5DEMO',
+            customerName: 'Demo User', customerEmail: 'demo@gmail.com', customerPhone: '9884090151',
+            items: [{ name: 'Tellicherry Black Pepper', qty: 1, unitPrice: 480, lineTotal: 480, weight: '250g' }],
+            reason: 'CHANGED_MIND', reasonNote: 'Ordered by mistake. Package unopened.',
+            requestedOn: '2026-04-17T16:45:00.000Z',
+            status: 'REQUESTED',
+            refundAmount: 480, refundMethod: null,
+            resolvedOn: null, adminNotes: ''
+          },
+        ];
+        localStorage.setItem('nazrani:returns:v1', JSON.stringify(returns));
+      }
+    } catch(_) {}
+
+    try {
+      // Ensure at least one pending (YET TO SHIP) order exists for fulfillment demo
+      var allOrders = JSON.parse(localStorage.getItem('nazrani:orders:v1') || '[]');
+      var hasPending = allOrders.some(function(o) {
+        return o.status === 'YET TO SHIP' || o.status === 'CONFIRMED' || !o.status;
+      });
+      if (!hasPending) {
+        var pendingDemo = {
+          orderId: 'NZR-PEND-DEMO',
+          placed: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+          customer: { name: 'Arun Mathew', email: 'arun.mathew@gmail.com', phone: '9847012345' },
+          address: { line1: '14 MG Road', line2: 'Near Central Park', city: 'Kottayam', state: 'Kerala', pincode: '686001' },
+          payment: { method: 'UPI' },
+          items: [
+            { id: 'p01', name: 'Tellicherry Black Pepper', qty: 2, unitPrice: 480, lineTotal: 960, weight: '250g' },
+            { id: 'p12', name: 'Chyawanprash', qty: 1, unitPrice: 890, lineTotal: 890, weight: '500g' },
+          ],
+          subtotal: 1850, shipping: 0, total: 1850,
+          status: 'YET TO SHIP',
+          estimatedDispatch: '07 May 2026',
+        };
+        allOrders.unshift(pendingDemo);
+        localStorage.setItem('nazrani:orders:v1', JSON.stringify(allOrders));
+      }
+    } catch(_) {}
+
+    try {
+      // 4 invoices for the 4 shipped demo orders (IN TRANSIT + 3 DELIVERED)
+      if (!localStorage.getItem('nazrani:invoices:v1')) {
+        var invoices = [
+          { invNo: 'INV-S2DEMO-2026', orderId: 'NZR-S2DEMO', customerName: 'Demo User', total: 1800, date: '2026-05-01T14:30:00.000Z', orderStatus: 'IN TRANSIT'  },
+          { invNo: 'INV-S3DEMO-2026', orderId: 'NZR-S3DEMO', customerName: 'Demo User', total: 1170, date: '2026-04-28T11:05:00.000Z', orderStatus: 'DELIVERED'   },
+          { invNo: 'INV-S4DEMO-2026', orderId: 'NZR-S4DEMO', customerName: 'Demo User', total:  920, date: '2026-04-22T08:45:00.000Z', orderStatus: 'DELIVERED'   },
+          { invNo: 'INV-S5DEMO-2026', orderId: 'NZR-S5DEMO', customerName: 'Demo User', total: 1680, date: '2026-04-15T16:20:00.000Z', orderStatus: 'DELIVERED'   },
+        ];
+        localStorage.setItem('nazrani:invoices:v1', JSON.stringify(invoices));
+      }
+    } catch (_) {}
+  })();
+
+  // ============================================================
   // EXPORT
   // ============================================================
   global.DataService = {
@@ -331,7 +486,9 @@
     getCart, getCartCount, addToCart, updateCartQty, removeFromCart, clearCart, getHydratedCart,
     resolveZone, computeShipping,
     // Orders
-    placeOrder, getOrder,
+    placeOrder, getOrders, getOrder, seedDemoOrders,
+    // Reviews
+    getReviews, addReview,
     // Forms
     subscribeNewsletter, sendContact
   };

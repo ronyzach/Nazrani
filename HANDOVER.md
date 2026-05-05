@@ -79,7 +79,7 @@ The prototype uses `localStorage`. In production, bind to a session or user.
   "price":     480,                   // INR; integer rupees
   "weight":    "250g",
   "gi":        true,
-  "organic":   "PGS-India",
+  "organic":   "India Organic",
   "category":  "Spices",
   "image":     "https://.../photo.jpg",  // optional; SVG fallback if absent
   "stock":     84,

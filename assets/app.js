@@ -104,6 +104,7 @@
       + '</button>'
       + '<div class="user-dropdown" id="user-dropdown" hidden>'
       + '<div class="user-dropdown-name">' + name + '</div>'
+      + '<a class="user-dropdown-link" href="account.html">My Orders</a>'
       + '<button class="user-dropdown-so" data-action="sign-out">Sign out</button>'
       + '</div>'
       + '</div>';
@@ -141,7 +142,7 @@
   }
 
   function renderToast() {
-    return '<div class="toast" id="toast" role="status" aria-live="polite"><span class="check">✓</span><span id="toast-msg"></span></div>';
+    return '<div class="toast" id="toast" role="status" aria-live="polite"><span class="check">✓</span><div class="toast-body"><span id="toast-msg"></span><a id="toast-action" class="toast-action" href="cart.html">View cart →</a></div></div>';
   }
 
   function renderFooter() {
@@ -182,14 +183,16 @@
   }
 
   let toastTimer = 0;
-  function showToast(msg) {
+  function showToast(msg, opts) {
     const el  = document.getElementById('toast');
     const txt = document.getElementById('toast-msg');
+    const act = document.getElementById('toast-action');
     if (!el || !txt) return;
     txt.textContent = msg;
+    if (act) act.style.display = (opts && opts.action === false) ? 'none' : '';
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 1800);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 3500);
   }
 
   function wireSearch() {
@@ -258,7 +261,7 @@
       const res = await DataService.subscribeNewsletter(email);
       if (res.ok && btn) btn.textContent = '✓ Subscribed';
       const msg = (DB().copy.ui && DB().copy.ui.toast && DB().copy.ui.toast.subscribed) || 'Subscribed';
-      showToast(msg);
+      showToast(msg, { action: false });
     });
   }
 
@@ -314,8 +317,7 @@
       const product = await DataService.getProduct(pid);
       if (!product) return;
       DataService.addToCart(pid, 1);
-      btn.cla
-ssList.add('added');
+      btn.classList.add('added');
       btn.textContent = ui.added || '✓ Added';
       showToast(product.name + (ui.toast && ui.toast.addedSuffix || ' added'));
       setTimeout(function () {

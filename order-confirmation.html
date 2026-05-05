@@ -47,35 +47,69 @@
     '<div class="row"><span>' + esc(it.name) + ' × ' + it.qty + '</span><span>' + Nazrani.rupee(it.lineTotal) + '</span></div>'
   ).join('');
 
-  const trackUrl = C.trackingUrl + '?awb=' + encodeURIComponent(order.airwayBillNo || '');
+  function courierTrackUrl(courier, awb) {
+    if (!awb) return null;
+    const c = (courier || '').toLowerCase();
+    if (c.includes('delhivery'))  return 'https://www.delhivery.com/track/package/' + encodeURIComponent(awb);
+    if (c.includes('ekart'))      return 'https://ekartlogistics.com/shipmenttrack/' + encodeURIComponent(awb);
+    if (c.includes('xpressbees')) return 'https://www.xpressbees.com/shipment/tracking/?awb=' + encodeURIComponent(awb);
+    if (c.includes('shadowfax'))  return 'https://tracker.shadowfax.in/?id=' + encodeURIComponent(awb);
+    if (awb) return 'https://www.google.com/search?q=' + encodeURIComponent((courier || 'courier') + ' track ' + awb);
+    return null;
+  }
 
-  body.innerHTML = `
-    <div class="seal" aria-hidden="true">✓</div>
-    <h1 id="confirm-title">${esc(tpl(C.thanksTemplate, { name: firstName }))}</h1>
-    <p class="confirm-intro">${esc(tpl(C.intro, { email: order.customer.email }))}</p>
-    <div class="order-id">Order · ${esc(order.orderId)} · Estimated dispatch ${esc(order.estimatedDispatch)}</div>
+  const hasTracking  = !!(order.courier || order.airwayBillNo);
+  const trackUrl     = courierTrackUrl(order.courier, order.airwayBillNo);
+  const orderStatus  = order.status || 'CONFIRMED';
+  const shipTo       = esc(order.address.city + ', ' + order.address.state + ' ' + order.address.pincode);
 
+  const shipCard = hasTracking ? `
     <div class="ship-card">
       <div class="ship-card-head">
         <div class="eyebrow">${esc(C.shipmentHeading)}</div>
-        <div class="status-pill"><span class="dot"></span>Booked</div>
+        <div class="status-pill" data-status="${esc(orderStatus)}"><span class="dot"></span>${esc(orderStatus)}</div>
       </div>
       <div class="awb-row">
         <div class="awb-label">${esc(C.awbLabel)}</div>
         <div class="awb-no" title="Tap to copy" data-copy="${esc(order.airwayBillNo)}">${esc(order.airwayBillNo)}</div>
       </div>
       <div class="awb-meta">
-        <div><span class="k">${esc(C.carrierLabel)}</span><span class="v">${esc(C.carrierName)}</span></div>
-        <div><span class="k">Ship to</span><span class="v">${esc(order.address.city + ', ' + order.address.state + ' ' + order.address.pincode)}</span></div>
+        <div><span class="k">${esc(C.carrierLabel)}</span><span class="v">${esc(order.courier || '—')}</span></div>
+        ${order.estimatedDelivery ? `<div><span class="k">Est. delivery</span><span class="v">${esc(new Date(order.estimatedDelivery).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}))}</span></div>` : ''}
+        <div><span class="k">Ship to</span><span class="v">${shipTo}</span></div>
       </div>
+      ${trackUrl ? `
       <div class="track-cta">
         <div class="track-copy">
           <strong>${esc(C.trackingHeading)}</strong>
           <span>${esc(C.trackingBody)}</span>
         </div>
         <a href="${trackUrl}" target="_blank" rel="noopener" class="btn btn-primary track-btn">${esc(C.trackingCta)}</a>
+      </div>` : ''}
+    </div>` : `
+    <div class="ship-card">
+      <div class="ship-card-head">
+        <div class="eyebrow">${esc(C.shipmentHeading)}</div>
+        <div class="status-pill" data-status="${esc(orderStatus)}"><span class="dot"></span>${esc(orderStatus)}</div>
       </div>
-    </div>
+      <div class="awb-meta" style="margin-top:8px;">
+        <div><span class="k">Ship to</span><span class="v">${shipTo}</span></div>
+        ${order.estimatedDispatch ? `<div><span class="k">Est. dispatch</span><span class="v">${esc(order.estimatedDispatch)}</span></div>` : ''}
+      </div>
+      <div class="track-cta">
+        <div class="track-copy">
+          <strong>Awaiting dispatch</strong>
+          <span>Tracking details will appear here once your order ships.</span>
+        </div>
+      </div>
+    </div>`;
+
+  body.innerHTML = `
+    <div class="seal" aria-hidden="true">✓</div>
+    <h1 id="confirm-title">${esc(tpl(C.thanksTemplate, { name: firstName }))}</h1>
+    <p class="confirm-intro">${esc(tpl(C.intro, { email: order.customer.email }))}</p>
+    <div class="order-id">Order · ${esc(order.orderId)}</div>
+    ${shipCard}
 
     <div class="recap">
       <h3>Order summary</h3>
@@ -96,7 +130,7 @@
   const awbEl = body.querySelector('.awb-no');
   if (awbEl) awbEl.addEventListener('click', () => {
     const v = awbEl.dataset.copy || awbEl.textContent;
-    if (navigator.clipboard) navigator.clipboard.writeText(v).then(() => Nazrani.showToast('Airway bill copied'));
+    if (navigator.clipboard) navigator.clipboard.writeText(v).then(() => Nazrani.showToast('Airway bill copied', { action: false }));
   });
 })();
 </script>

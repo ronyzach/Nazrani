@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Fulfillment · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+<style>
+/* Row highlight for pending */
+.pending-row td { background: #fffbf0; }
+.pending-row:hover td { background: #fff7e0; }
+
+/* Expand row */
+.expand-row td {
+  background: #f7faf8;
+  border-top: none;
+  padding: 0;
+}
+.expand-inner {
+  display: flex; align-items: flex-end; gap: 12px;
+  padding: 12px 16px 14px;
+  border-top: 1px dashed var(--border);
+  flex-wrap: wrap;
+}
+.expand-field { display:flex; flex-direction:column; gap:4px; }
+.expand-field label { font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-muted); font-weight:600; }
+.ship-input {
+  font-family: var(--sans); font-size: 12px; color: var(--ink);
+  background: #fff; border: 1px solid var(--border-strong);
+  border-radius: var(--radius); padding: 5px 8px;
+  transition: border-color 140ms;
+}
+.ship-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px rgba(44,82,57,.10); }
+.ship-select {
+  font-family: var(--sans); font-size: 12px; color: var(--ink);
+  background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='none' stroke='%231a1d1a' stroke-width='1.5' d='M1 1l4 4 4-4'/></svg>") no-repeat right 8px center;
+  border: 1px solid var(--border-strong); border-radius: var(--radius);
+  padding: 5px 26px 5px 8px; appearance: none;
+  transition: border-color 140ms; cursor: pointer;
+}
+.ship-select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px rgba(44,82,57,.10); }
+
+/* Ship toggle button */
+.ship-toggle-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--green);
+  background: var(--green-light); border: 1px solid #a8d5b5;
+  border-radius: var(--radius); padding: 5px 12px;
+  cursor: pointer; transition: background 140ms, border-color 140ms;
+  white-space: nowrap;
+}
+.ship-toggle-btn:hover { background: #c8e8d3; border-color: var(--green); }
+.ship-toggle-btn.open { background: #e8f5ec; }
+
+/* Dispatched badge */
+.dispatched-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--green); background:var(--green-light); border:1px solid #a8d5b5; border-radius:99px; padding:2px 10px; }
+
+/* Empty state */
+.all-clear { text-align:center; padding:60px 20px; }
+.all-clear .icon { font-size:36px; margin-bottom:14px; }
+.all-clear h3 { font-family:var(--sans); font-size:16px; font-weight:600; margin-bottom:6px; }
+.all-clear p { font-size:13px; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Fulfillment</h1>
+      </div>
+      <div class="topbar-actions">
+        <span id="pending-label" style="font-size:12px;color:var(--ink-muted);"></span>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Stat tiles -->
+      <div class="stat-grid" id="stat-grid" style="margin-bottom:24px;"></div>
+
+      <!-- ── Pending Dispatch ───────────────────────────────────────────── -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h2>Pending Dispatch</h2>
+          <span style="font-size:11px;color:var(--ink-muted);">Click ↑ Ship on a row to enter courier details</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="pending-table">
+            <thead><tr>
+              <th>Placed</th>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th class="td-amt">Amount</th>
+              <th>Invoice</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="pending-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Dispatched Today ───────────────────────────────────────────── -->
+      <div class="card" id="dispatched-card" style="display:none;">
+        <div class="card-header">
+          <h2>Dispatched Today</h2>
+          <span class="dispatched-badge" id="dispatched-count"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="dispatched-table">
+            <thead><tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th class="td-amt">Amount</th>
+              <th>Courier · AWB</th>
+              <th>Est. Delivery</th>
+              <th>Invoice</th>
+              <th>Shipped At</th>
+            </tr></thead>
+            <tbody id="dispatched-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('fulfillment');
+
+const ORDERS_KEY   = 'nazrani:orders:v1';
+const INVOICES_KEY = 'nazrani:invoices:v1';
+const esc = Admin.esc, rupee = Admin.rupee, fmtDate = Admin.fmtDate;
+const COURIERS = ['IndiaShipments','Delhivery','DTDC','BlueDart','Ekart','Xpressbees','India Post','Shadowfax','Ecom Express','Other'];
+const COURIER_OPTS = COURIERS.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
+
+const TODAY = new Date().toISOString().slice(0,10);
+
+function readOrders() {
+  try { return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); } catch(_){ return []; }
+}
+function writeOrders(list) { localStorage.setItem(ORDERS_KEY, JSON.stringify(list)); }
+
+function invoiceMap() {
+  try {
+    const invs = JSON.parse(localStorage.getItem(INVOICES_KEY)||'[]');
+    const map = {};
+    invs.forEach(function(inv){ if (inv.orderId) map[inv.orderId] = inv; });
+    return map;
+  } catch(_){ return {}; }
+}
+
+function invoiceCell(orderId, map) {
+  const inv = map[orderId];
+  if (inv) {
+    return '<span style="color:var(--green);font-weight:600;font-size:12px;">✓ ' + esc(inv.invNo||'Generated') + '</span>'
+      + '<br><a href="invoices.html" style="font-size:10px;letter-spacing:.06em;color:var(--ink-muted);text-decoration:underline;">Print</a>';
+  }
+  return '<a href="invoices.html?id=' + esc(orderId) + '" class="btn btn-ghost btn-sm" style="font-size:11px;white-space:nowrap;">Generate →</a>';
+}
+
+function isPending(o) {
+  return o.status === 'YET TO SHIP' || o.status === 'CONFIRMED' || !o.status;
+}
+function isDispatchedToday(o) {
+  return o.status === 'IN TRANSIT' && o.shippedAt && o.shippedAt.slice(0,10) === TODAY;
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────
+function renderStats(orders) {
+  const pending   = orders.filter(isPending).length;
+  const today     = orders.filter(isDispatchedToday).length;
+  const inTransit = orders.filter(function(o){ return o.status==='IN TRANSIT'; }).length;
+  document.getElementById('stat-grid').innerHTML = [
+    { label:'Pending Dispatch',  value: pending,   sub: 'Yet to ship',          highlight: pending>0 },
+    { label:'Dispatched Today',  value: today,      sub: 'Shipped so far today' },
+    { label:'In Transit',        value: inTransit,  sub: 'En route to customers' },
+  ].map(function(s){
+    return '<div class="stat-card"><div class="label">'+s.label+'</div>'
+      +'<div class="value" style="'+(s.highlight&&s.value>0?'color:var(--amber);':'')+'">' +s.value+'</div>'
+      +'<div class="sub">'+s.sub+'</div></div>';
+  }).join('');
+
+  document.getElementById('pending-label').textContent =
+    pending > 0 ? pending + ' order' + (pending===1?'':'s') + ' waiting to ship' : 'All orders dispatched';
+}
+
+// ── Pending table ─────────────────────────────────────────────────────────
+function renderPending(orders) {
+  const list = orders.filter(isPending).sort(function(a,b){
+    return new Date(a.placed) - new Date(b.placed);
+  });
+
+  const invMap = invoiceMap();
+  const tbody = document.getElementById('pending-body');
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7">'
+      + '<div class="all-clear"><div class="icon">✓</div><h3>All clear — nothing to ship</h3><p>New orders will appear here as they come in.</p></div>'
+      + '</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(function(o){
+    const items = (o.items||[]).slice(0,2).map(function(i){ return i.name+' ×'+i.qty; }).join(', ')
+      + ((o.items||[]).length > 2 ? ' +'+((o.items||[]).length-2)+' more' : '');
+    const cust = (o.customer && o.customer.name) || '—';
+    return (
+      '<tr class="pending-row" data-id="'+esc(o.orderId)+'">'
+        +'<td style="font-size:11px;white-space:nowrap;">'+fmtDate(o.placed)+'</td>'
+        +'<td class="td-mono" style="white-space:nowrap;">'+esc(o.orderId)+'</td>'
+        +'<td class="td-primary" style="white-space:nowrap;">'+esc(cust)+'</td>'
+        +'<td style="font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(items)+'</td>'
+        +'<td class="td-amt">'+rupee(o.total)+'</td>'
+        +'<td style="white-space:nowrap;">'+invoiceCell(o.orderId, invMap)+'</td>'
+        +'<td class="td-actions"><button class="ship-toggle-btn" data-open="0">↑ Ship</button></td>'
+      +'</tr>'
+      +'<tr class="expand-row" data-for="'+esc(o.orderId)+'" style="display:none;">'
+        +'<td colspan="7">'
+          +'<div class="expand-inner">'
+            +'<div class="expand-field" style="flex:0 0 160px;">'
+              +'<label>Courier</label>'
+              +'<select class="ship-select trk-courier">'+COURIER_OPTS+'</select>'
+            +'</div>'
+            +'<div class="expand-field" style="flex:1 1 200px;">'
+              +'<label>AWB / Tracking No.</label>'
+              +'<input type="text" class="ship-input trk-awb" placeholder="e.g. DEL1234567890" style="font-family:var(--mono);letter-spacing:.03em;width:100%;" value="'+esc(o.airwayBillNo||'')+'"/>'
+            +'</div>'
+            +'<div class="expand-field" style="flex:0 0 150px;">'
+              +'<label>Est. Delivery</label>'
+              +'<input type="date" class="ship-input trk-date" value="'+esc(o.estimatedDelivery||'')+'"/>'
+            +'</div>'
+            +'<div class="expand-field" style="flex:0 0 auto;padding-bottom:1px;">'
+              +'<label>&nbsp;</label>'
+              +'<button class="btn btn-primary btn-sm confirm-ship-btn" style="white-space:nowrap;height:30px;">✓ Confirm Ship</button>'
+            +'</div>'
+            +'<div class="expand-field" style="flex:0 0 auto;padding-bottom:1px;">'
+              +'<label>&nbsp;</label>'
+              +'<button class="btn btn-ghost btn-sm cancel-ship-btn" style="height:30px;">Cancel</button>'
+            +'</div>'
+          +'</div>'
+        +'</td>'
+      +'</tr>'
+    );
+  }).join('');
+
+  // Wire toggle buttons
+  tbody.querySelectorAll('.ship-toggle-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const row = btn.closest('tr');
+      const id  = row.dataset.id;
+      const expRow = tbody.querySelector('.expand-row[data-for="'+id+'"]');
+      const isOpen = btn.dataset.open === '1';
+      if (isOpen) {
+        expRow.style.display = 'none';
+        btn.dataset.open = '0';
+        btn.classList.remove('open');
+        btn.textContent = '↑ Ship';
+      } else {
+        // Close any other open expand rows
+        tbody.querySelectorAll('.expand-row').forEach(function(r){ r.style.display='none'; });
+        tbody.querySelectorAll('.ship-toggle-btn').forEach(function(b){ b.dataset.open='0'; b.classList.remove('open'); b.textContent='↑ Ship'; });
+        expRow.style.display = '';
+        btn.dataset.open = '1';
+        btn.classList.add('open');
+        btn.textContent = '× Close';
+        expRow.querySelector('.trk-awb').focus();
+      }
+    });
+  });
+
+  // Wire cancel buttons
+  tbody.querySelectorAll('.cancel-ship-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const expRow = btn.closest('.expand-row');
+      const id = expRow.dataset.for;
+      const toggleBtn = tbody.querySelector('.pending-row[data-id="'+id+'"] .ship-toggle-btn');
+      expRow.style.display = 'none';
+      if (toggleBtn) { toggleBtn.dataset.open='0'; toggleBtn.classList.remove('open'); toggleBtn.textContent='↑ Ship'; }
+    });
+  });
+
+  // Wire confirm ship buttons
+  tbody.querySelectorAll('.confirm-ship-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const expRow = btn.closest('.expand-row');
+      const id  = expRow.dataset.for;
+      const awb = expRow.querySelector('.trk-awb').value.trim();
+      if (!awb) {
+        const awbInput = expRow.querySelector('.trk-awb');
+        awbInput.focus();
+        awbInput.style.borderColor = 'var(--red)';
+        setTimeout(function(){ awbInput.style.borderColor = ''; }, 2000);
+        return;
+      }
+      const orders = readOrders();
+      const o = orders.find(function(x){ return x.orderId===id; });
+      if (!o) return;
+      o.courier           = expRow.querySelector('.trk-courier').value;
+      o.airwayBillNo      = awb;
+      o.estimatedDelivery = expRow.querySelector('.trk-date').value;
+      o.status            = 'IN TRANSIT';
+      o.shippedAt         = new Date().toISOString();
+      writeOrders(orders);
+
+      btn.textContent = '✓ Shipped!';
+      btn.disabled = true;
+      btn.style.background = 'var(--green)';
+      setTimeout(function(){ render(); }, 600);
+    });
+  });
+}
+
+// ── Dispatched Today table ─────────────────────────────────────────────────
+function renderDispatched(orders) {
+  const invMap = invoiceMap();
+  const list = orders.filter(isDispatchedToday).sort(function(a,b){
+    return new Date(b.shippedAt) - new Date(a.shippedAt);
+  });
+
+  const card = document.getElementById('dispatched-card');
+  if (!list.length) { card.style.display = 'none'; return; }
+
+  card.style.display = '';
+  document.getElementById('dispatched-count').textContent = list.length + ' shipped';
+
+  document.getElementById('dispatched-body').innerHTML = list.map(function(o){
+    const items = (o.items||[]).slice(0,2).map(function(i){ return i.name+' ×'+i.qty; }).join(', ')
+      + ((o.items||[]).length > 2 ? ' +'+((o.items||[]).length-2)+' more' : '');
+    const shippedTime = o.shippedAt
+      ? new Date(o.shippedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+      : '—';
+    const courierAwb = o.courier
+      ? '<span style="font-size:12px;">'+esc(o.courier)+'</span><br><span class="td-mono" style="font-size:11px;letter-spacing:.04em;color:var(--ink-muted);">'+esc(o.airwayBillNo||'—')+'</span>'
+      : '—';
+    return '<tr>'
+      +'<td class="td-mono" style="font-size:11px;">'+esc(o.orderId)+'</td>'
+      +'<td class="td-primary">'+esc((o.customer&&o.customer.name)||'—')+'</td>'
+      +'<td style="font-size:12px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(items)+'</td>'
+      +'<td class="td-amt">'+rupee(o.total)+'</td>'
+      +'<td>'+courierAwb+'</td>'
+      +'<td style="font-size:12px;">'+fmtDate(o.estimatedDelivery)+'</td>'
+      +'<td>'+invoiceCell(o.orderId, invMap)+'</td>'
+      +'<td style="font-size:12px;color:var(--green);font-weight:500;">'+shippedTime+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function render() {
+  const orders = readOrders();
+  renderStats(orders);
+  renderPending(orders);
+  renderDispatched(orders);
+}
+
+render();
+</script>
+</body>
+</html>

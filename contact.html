@@ -47,8 +47,8 @@
         <h3>${esc(C.formTitle)}</h3>
         <p class="req-legend">Fields marked <span class="req" aria-hidden="true">*</span> are required.</p>
         <div class="form-grid">
-          <div class="field"><label for="cf-name">${esc(C.fields.name)} ${req}</label><input id="cf-name" type="text" required aria-required="true" autocomplete="name"/></div>
-          <div class="field"><label for="cf-email">${esc(C.fields.email)} ${req}</label><input id="cf-email" type="email" required aria-required="true" autocomplete="email"/></div>
+          <div class="field"><label for="cf-name">${esc(C.fields.name)} ${req}</label><input id="cf-name" type="text" required aria-required="true" autocomplete="name" placeholder="e.g. Maria Joseph"/></div>
+          <div class="field"><label for="cf-email">${esc(C.fields.email)} ${req}</label><input id="cf-email" type="email" required aria-required="true" autocomplete="email" placeholder="you@example.in"/></div>
           <div class="field full">
             <label for="cf-subject">${esc(C.fields.subject)} ${req}</label>
             <select id="cf-subject" required aria-required="true">
@@ -56,19 +56,18 @@
               ${C.fields.topics.map(t => '<option>' + esc(t) + '</option>').join('')}
             </select>
           </div>
-          <div class="field full"><label for="cf-message">${esc(C.fields.message)} ${req}</label><textarea id="cf-message" required aria-required="true"></textarea></div>
+          <div class="field full"><label for="cf-message">${esc(C.fields.message)} ${req}</label><textarea id="cf-message" required aria-required="true" placeholder="Tell us what you'd like to ask, share, or order. A person reads every message."></textarea></div>
         </div>
         <div id="cf-error" role="alert" style="color:var(--error);font-size:12px;margin-top:14px;display:none;"></div>
         <button type="submit" class="btn btn-primary" style="margin-top:24px;">${esc(C.submit)}</button>
       </div>
     </form>
     <aside>
-      <div class="summary-card" style="position:static;">
+      <div class="summary-card reach-card" style="position:static;">
         <h3>${esc(C.asideTitle)}</h3>
-        <p style="font-family:var(--serif);font-size:15px;color:var(--ink);margin:0 0 14px;line-height:1.5;">${C.asideAddress}</p>
-        <div class="row"><span>Customer care</span><span>${esc(B.contact.care)}</span></div>
-        <div class="row"><span>Press</span><span>${esc(B.contact.press)}</span></div>
-        <div class="row"><span>Phone</span><span>${esc(B.contact.phone)}</span></div>
+        <p class="reach-address">${C.asideAddress}</p>
+        <div class="row"><span>Customer care</span><span><a href="mailto:${esc(B.contact.care)}">${esc(B.contact.care)}</a></span></div>
+        <div class="row"><span>Phone</span><span><a href="tel:${esc((B.contact.phone||'').replace(/\s+/g,''))}">${esc(B.contact.phone)}</a></span></div>
         <div class="row"><span>FSSAI</span><span>${esc(B.contact.fssai)}</span></div>
         <div class="row"><span>GST</span><span>${esc(B.contact.gst)}</span></div>
         <div class="note">${C.asideNote}</div>
@@ -90,12 +89,13 @@
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; btn.textContent = 'Sending...';
     const res = await DataService.sendContact({ name, email, subject, message });
+    const firstName = (name.split(/\s+/)[0] || name).trim();
     form.innerHTML = `
-      <div class="field-group">
-        <h3>${esc(C.thanks.title)}</h3>
-        <p style="font-family:var(--serif);font-size:18px;color:var(--ink);margin:0 0 12px;">${esc(C.thanks.subtitle)}</p>
-        <p style="color:var(--ink-soft);">${esc(tpl(C.thanks.bodyTpl, { ref: res.ticketId }))}</p>
-        <div style="margin-top:24px;"><a href="index.html" class="btn btn-ghost">${esc(DATA.copy.ui.backToHome)}</a></div>
+      <div class="thanks-card" style="padding:24px 0;">
+        <h2 style="font-family:var(--serif);font-weight:500;font-size:40px;color:var(--ink);margin:0 0 14px;line-height:1.1;letter-spacing:-0.01em;">${esc(tpl(C.thanks.titleTpl, { name: firstName }))}</h2>
+        <p style="font-family:var(--serif);font-size:20px;color:var(--ink);margin:0 0 6px;line-height:1.45;">${esc(C.thanks.subtitle)}</p>
+        <p style="font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-soft);margin:0 0 30px;line-height:1.5;">${esc(tpl(C.thanks.bodyTpl, { ref: res.ticketId }))}</p>
+        <a href="index.html" class="btn btn-ghost">${esc(DATA.copy.ui.backToHome)}</a>
       </div>`;
   });
 })();

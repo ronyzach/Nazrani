@@ -22,9 +22,6 @@
   <section class="founder" aria-labelledby="founder-eyebrow">
     <div class="container" id="founder-body"></div>
   </section>
-  <section class="promise" aria-labelledby="promise-title">
-    <div class="container grid" id="promise-grid"></div>
-  </section>
 </main>
 
 <div id="app-footer"></div>
@@ -67,15 +64,6 @@
     <blockquote>
       <div class="quote"><span class="accent">"</span>${C.founder.quote}<span class="accent">"</span></div>
     </blockquote>`;
-
-  document.getElementById('promise-grid').innerHTML = `
-    <div>
-      <div class="eyebrow">${esc(C.promise.eyebrow)}</div>
-      <h2 id="promise-title">${esc(C.promise.titleA)}<span class="serif-i">${esc(C.promise.titleB)}</span></h2>
-    </div>
-    <div>
-      <a href="${C.promise.cta.href}" class="btn btn-ghost">${esc(C.promise.cta.label)}</a>
-    </div>`;
 })();
 </script>
 </body>

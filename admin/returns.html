@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Returns &amp; Refunds · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+<style>
+.return-panel {
+  position:fixed; top:0; right:0; bottom:0; width:480px;
+  background:#fff; border-left:1px solid var(--border);
+  box-shadow:-4px 0 24px rgba(0,0,0,.10);
+  display:flex; flex-direction:column; z-index:200;
+  transform:translateX(100%); transition:transform 240ms ease;
+}
+.return-panel.open { transform:translateX(0); }
+.rp-header { padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.rp-body   { flex:1; overflow-y:auto; padding:22px; }
+.rp-footer { padding:14px 22px; border-top:1px solid var(--border); display:flex; gap:10px; flex-wrap:wrap; }
+.rp-section { margin-bottom:22px; }
+.rp-section .sec-title { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:10px; }
+.workflow-box { border-radius:7px; padding:14px 16px; margin-bottom:0; }
+.workflow-box.requested  { background:#f5f5f3; border:1px solid var(--border-strong); }
+.workflow-box.approved   { background:#fffbf0; border:1px solid #e8c97a; }
+.workflow-box.initiated  { background:#f0f8ff; border:1px solid #b0d4f0; }
+.workflow-box.completed  { background:var(--green-light); border:1px solid #a8d5b5; }
+.workflow-box.rejected   { background:#fff5f5; border:1px solid #f5c0c0; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.25); z-index:199; display:none; }
+.overlay.show { display:block; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Returns &amp; Refunds</h1>
+      </div>
+      <div class="topbar-actions">
+        <span id="rtn-count" style="font-size:12px;color:var(--ink-muted);"></span>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <div class="card" style="padding:0;margin-bottom:20px;">
+        <div class="filter-bar">
+          <div class="search-box">
+            <span style="color:var(--ink-muted);font-size:14px;">⌕</span>
+            <input id="search" type="text" placeholder="Search return ID, order, customer…"/>
+          </div>
+          <select class="filter-select" id="status-filter">
+            <option value="">All Statuses</option>
+            <option value="REQUESTED">Requested</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+            <option value="REFUND_INITIATED">Refund Initiated</option>
+            <option value="REFUND_COMPLETED">Refund Completed</option>
+          </select>
+          <select class="filter-select" id="reason-filter">
+            <option value="">All Reasons</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="stat-grid" id="stat-grid" style="margin-bottom:20px;"></div>
+
+      <div class="card" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="returns-table">
+            <thead><tr>
+              <th data-col="returnId">Return ID <span class="si">↕</span></th>
+              <th data-col="requestedOn">Date <span class="si">↕</span></th>
+              <th data-col="orderId">Order <span class="si">↕</span></th>
+              <th data-col="customer">Customer <span class="si">↕</span></th>
+              <th>Items</th>
+              <th data-col="reason">Reason <span class="si">↕</span></th>
+              <th data-col="refundAmount">Amount <span class="si">↕</span></th>
+              <th data-col="status">Status <span class="si">↕</span></th>
+              <th></th>
+            </tr></thead>
+            <tbody id="returns-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="return-panel" id="return-panel">
+  <div class="rp-header">
+    <div>
+      <div style="font-size:15px;font-weight:600;" id="rp-title">Return Detail</div>
+      <div id="rp-sub" style="font-size:12px;color:var(--ink-muted);margin-top:2px;"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="rp-close">✕</button>
+  </div>
+  <div class="rp-body" id="rp-body"></div>
+</div>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('returns');
+
+const RETURNS_KEY = 'nazrani:returns:v1';
+const esc = Admin.esc, rupee = Admin.rupee, fmtDate = Admin.fmtDate;
+const REASONS = Admin.RETURN_REASONS;
+const STATUSES = Admin.RETURN_STATUSES;
+
+function readReturns() { try{ return JSON.parse(localStorage.getItem(RETURNS_KEY)||'[]'); }catch(_){ return []; } }
+function writeReturns(list) { localStorage.setItem(RETURNS_KEY, JSON.stringify(list)); }
+
+// Populate reason filter
+document.getElementById('reason-filter').innerHTML = '<option value="">All Reasons</option>'
+  + Object.entries(REASONS).map(function(e){ return '<option value="'+e[0]+'">'+e[1]+'</option>'; }).join('');
+
+let sortCol='requestedOn', sortDir=-1, activeId=null;
+
+// ── Stats ─────────────────────────────────────────────────────────────────
+function renderStats(list) {
+  const pending   = list.filter(function(r){ return r.status==='REQUESTED'; }).length;
+  const approved  = list.filter(function(r){ return r.status==='APPROVED'||r.status==='REFUND_INITIATED'; }).length;
+  const completed = list.filter(function(r){ return r.status==='REFUND_COMPLETED'; }).length;
+  const totalAmt  = list.filter(function(r){ return r.status==='REFUND_COMPLETED'; })
+                        .reduce(function(s,r){ return s+(r.refundAmount||0); },0);
+  document.getElementById('stat-grid').innerHTML = [
+    { label:'Total Returns',           value: list.length, sub: 'Matching current filter' },
+    { label:'Pending Review',          value: pending,     sub: 'Awaiting decision',         highlight: pending>0 },
+    { label:'Approved / In Progress',  value: approved,    sub: 'Refund not yet completed',  highlight: approved>0 },
+    { label:'Refunds Completed',       value: completed,   sub: rupee(totalAmt)+' refunded' },
+  ].map(function(s){
+    return '<div class="stat-card"><div class="label">'+s.label+'</div>'
+      +'<div class="value" style="'+(s.highlight&&s.value>0?'color:var(--amber);':'')+'">' +s.value+'</div>'
+      +'<div class="sub">'+s.sub+'</div></div>';
+  }).join('');
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────
+function filtered() {
+  const q  = document.getElementById('search').value.toLowerCase().trim();
+  const st = document.getElementById('status-filter').value;
+  const rs = document.getElementById('reason-filter').value;
+  return readReturns().filter(function(r){
+    const matchQ = !q ||
+      (r.returnId||'').toLowerCase().includes(q) ||
+      (r.orderId||'').toLowerCase().includes(q) ||
+      (r.customerName||'').toLowerCase().includes(q) ||
+      (r.customerEmail||'').toLowerCase().includes(q);
+    const matchS = !st || r.status===st;
+    const matchR = !rs || r.reason===rs;
+    return matchQ && matchS && matchR;
+  });
+}
+
+function sortList(list) {
+  return list.slice().sort(function(a,b){
+    if (sortCol==='requestedOn') return sortDir*(new Date(a.requestedOn)-new Date(b.requestedOn));
+    if (sortCol==='refundAmount')return sortDir*((a.refundAmount||0)-(b.refundAmount||0));
+    if (sortCol==='returnId')   return sortDir*(a.returnId||'').localeCompare(b.returnId||'');
+    if (sortCol==='orderId')    return sortDir*(a.orderId||'').localeCompare(b.orderId||'');
+    if (sortCol==='customer')   return sortDir*(a.customerName||'').localeCompare(b.customerName||'');
+    if (sortCol==='reason')     return sortDir*(a.reason||'').localeCompare(b.reason||'');
+    if (sortCol==='status')     return sortDir*(a.status||'').localeCompare(b.status||'');
+    return 0;
+  });
+}
+
+function render() {
+  const list = sortList(filtered());
+  const total = readReturns().length;
+  document.getElementById('rtn-count').textContent = list.length === total
+    ? total + ' total returns'
+    : list.length + ' of ' + total + ' returns';
+
+  document.querySelectorAll('th[data-col]').forEach(function(th){
+    th.classList.toggle('sorted', th.dataset.col===sortCol);
+    var si=th.querySelector('.si');
+    if(si) si.textContent = th.dataset.col===sortCol?(sortDir===-1?'↓':'↑'):'↕';
+  });
+
+  document.getElementById('returns-body').innerHTML = list.length
+    ? list.map(function(r){
+        const itemNames = (r.items||[]).map(function(i){ return i.name+' ×'+i.qty; }).join(', ');
+        const kid = 'km-'+r.returnId.replace(/\W/g,'');
+        const rowBg = r.status==='REQUESTED' ? 'background:#fffbf0;' : '';
+        return '<tr style="cursor:pointer;'+rowBg+'" data-id="'+esc(r.returnId)+'">'
+          +'<td class="td-mono" style="font-size:12px;">'+esc(r.returnId)+'</td>'
+          +'<td style="font-size:12px;">'+fmtDate(r.requestedOn)+'</td>'
+          +'<td class="td-mono" style="font-size:12px;">'+esc(r.orderId)+'</td>'
+          +'<td class="td-primary">'+esc(r.customerName||'—')+'<div style="font-size:11px;color:var(--ink-muted);">'+esc(r.customerEmail||'')+'</div></td>'
+          +'<td style="font-size:12px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(itemNames)+'</td>'
+          +'<td style="font-size:12px;color:var(--ink-soft);">'+esc(REASONS[r.reason]||r.reason||'—')+'</td>'
+          +'<td class="td-amt">'+rupee(r.refundAmount||0)+'</td>'
+          +'<td>'+Admin.returnStatusBadge(r.status)+'</td>'
+          +'<td class="td-actions"><div class="kebab-wrap">'
+          +'<button class="kebab-btn" data-kebab="'+kid+'">⋮</button>'
+          +'<div class="kebab-menu" id="'+kid+'">'
+          +'<button data-open="'+esc(r.returnId)+'">◧ View Detail</button>'
+          +'</div></div></td>'
+          +'</tr>';
+      }).join('')
+    : '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--ink-muted);">No returns found</td></tr>';
+
+  document.querySelectorAll('[data-open]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openPanel(btn.dataset.open); });
+  });
+  document.querySelectorAll('tr[data-id]').forEach(function(tr){
+    tr.addEventListener('click', function(e){
+      if(e.target.closest('.kebab-wrap')) return;
+      openPanel(tr.dataset.id);
+    });
+  });
+  document.querySelectorAll('.kebab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var menu=document.getElementById(btn.dataset.kebab);
+      var wasOpen=menu.classList.contains('open');
+      document.querySelectorAll('.kebab-menu.open').forEach(function(m){m.classList.remove('open');});
+      if(!wasOpen) menu.classList.add('open');
+    });
+  });
+
+  renderStats(list);
+}
+
+// ── Detail panel ──────────────────────────────────────────────────────────
+function openPanel(returnId) {
+  const r = readReturns().find(function(x){ return x.returnId===returnId; });
+  if (!r) return;
+  activeId = returnId;
+
+  document.getElementById('rp-title').textContent = r.returnId;
+  document.getElementById('rp-sub').textContent = 'For order ' + r.orderId;
+
+  const itemRows = (r.items||[]).map(function(it){
+    return '<tr><td>'+esc(it.name)+' <span style="color:var(--ink-muted);">×'+it.qty+'</span></td>'
+      +'<td style="text-align:right;">'+rupee(it.lineTotal)+'</td></tr>';
+  }).join('');
+
+  document.getElementById('rp-body').innerHTML =
+    // Customer
+    '<div class="rp-section"><div class="sec-title">Customer</div>'
+    +'<div class="kv-list">'
+    +'<div class="kv-row"><span class="k">Name</span><span class="v">'+esc(r.customerName||'—')+'</span></div>'
+    +'<div class="kv-row"><span class="k">Email</span><span class="v">'+esc(r.customerEmail||'—')+'</span></div>'
+    +'<div class="kv-row"><span class="k">Phone</span><span class="v">'+esc(r.customerPhone||'—')+'</span></div>'
+    +'<div class="kv-row"><span class="k">Order</span><span class="v td-mono" style="font-size:12px;">'+esc(r.orderId)+'</span></div>'
+    +'</div></div>'
+    // Items
+    +'<div class="rp-section"><div class="sec-title">Items Returned</div>'
+    +'<table style="width:100%;font-size:13px;">'+itemRows+'</table>'
+    +'<div class="divider"></div>'
+    +'<div class="kv-list"><div class="kv-row" style="font-weight:700;"><span class="k">Refund Amount</span><span class="v">'+rupee(r.refundAmount||0)+'</span></div></div>'
+    +'</div>'
+    // Return reason
+    +'<div class="rp-section"><div class="sec-title">Return Reason</div>'
+    +'<div style="font-weight:600;font-size:13px;margin-bottom:6px;">'+esc(REASONS[r.reason]||r.reason||'—')+'</div>'
+    +(r.reasonNote ? '<div style="font-size:12px;color:var(--ink-soft);background:#f5f5f3;border-radius:5px;padding:10px 12px;line-height:1.6;">'+esc(r.reasonNote)+'</div>' : '')
+    +'</div>'
+    // Timeline
+    +'<div class="rp-section"><div class="sec-title">Timeline</div>'
+    +'<div class="kv-list">'
+    +'<div class="kv-row"><span class="k">Requested</span><span class="v">'+fmtDate(r.requestedOn)+'</span></div>'
+    +(r.resolvedOn ? '<div class="kv-row"><span class="k">Resolved</span><span class="v">'+fmtDate(r.resolvedOn)+'</span></div>' : '')
+    +(r.refundMethod ? '<div class="kv-row"><span class="k">Refund via</span><span class="v">'+esc(r.refundMethod==='ORIGINAL'?'Original Payment Method':r.refundMethod==='STORE_CREDIT'?'Store Credit':'Bank Transfer')+'</span></div>' : '')
+    +'</div></div>'
+    // Admin notes (if any)
+    +(r.adminNotes ? '<div class="rp-section"><div class="sec-title">Admin Notes</div><div style="font-size:12px;color:var(--ink-soft);background:#f5f5f3;border-radius:5px;padding:10px 12px;line-height:1.6;">'+esc(r.adminNotes)+'</div></div>' : '')
+    // Workflow
+    +'<div class="rp-section" id="workflow-section">'+buildWorkflow(r)+'</div>';
+
+  attachWorkflowHandlers(r);
+
+  document.getElementById('return-panel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+
+function buildWorkflow(r) {
+  const methodOpts = [
+    {v:'ORIGINAL',     l:'Original Payment Method'},
+    {v:'STORE_CREDIT', l:'Store Credit'},
+    {v:'BANK_TRANSFER',l:'Bank Transfer'},
+  ].map(function(o){ return '<option value="'+o.v+'">'+o.l+'</option>'; }).join('');
+
+  if (r.status === 'REQUESTED') {
+    return '<div class="workflow-box requested">'
+      +'<div class="sec-title" style="margin-bottom:12px;">Action Required</div>'
+      +'<div class="form-group" style="margin-bottom:12px;">'
+      +'<label style="font-size:11px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.08em;">Refund Method</label>'
+      +'<select id="wf-method" style="margin-top:4px;width:100%;">'+methodOpts+'</select>'
+      +'</div>'
+      +'<div class="form-group" style="margin-bottom:14px;">'
+      +'<label style="font-size:11px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.08em;">Admin Notes</label>'
+      +'<textarea id="wf-notes" rows="2" style="margin-top:4px;width:100%;font-size:13px;resize:vertical;" placeholder="Reason for decision…"></textarea>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px;">'
+      +'<button class="btn btn-primary btn-sm" id="wf-approve">✓ Approve Return</button>'
+      +'<button class="btn btn-outline btn-sm" id="wf-reject" style="border-color:var(--red);color:var(--red);">✕ Reject</button>'
+      +'</div></div>';
+  }
+  if (r.status === 'APPROVED') {
+    return '<div class="workflow-box approved">'
+      +'<div class="sec-title" style="margin-bottom:10px;">Next Step — Initiate Refund</div>'
+      +'<div style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;">Return approved. Confirm refund amount and initiate the transfer.</div>'
+      +'<div class="form-group" style="margin-bottom:14px;">'
+      +'<label style="font-size:11px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.08em;">Refund Amount (₹)</label>'
+      +'<input id="wf-amount" type="number" min="0" value="'+esc(r.refundAmount||'')+'" style="margin-top:4px;width:100%;font-size:13px;padding:7px 10px;"/>'
+      +'</div>'
+      +'<button class="btn btn-primary btn-sm" id="wf-initiate">↻ Initiate Refund</button>'
+      +'</div>';
+  }
+  if (r.status === 'REFUND_INITIATED') {
+    return '<div class="workflow-box initiated">'
+      +'<div class="sec-title" style="margin-bottom:10px;">Refund in Progress</div>'
+      +'<div style="font-size:12px;color:var(--ink-soft);margin-bottom:14px;">'+rupee(r.refundAmount)+' via '+(r.refundMethod==='ORIGINAL'?'original payment method':r.refundMethod==='STORE_CREDIT'?'store credit':'bank transfer')+'. Mark complete once transfer is confirmed.</div>'
+      +'<button class="btn btn-primary btn-sm" id="wf-complete">✓ Mark Refund Complete</button>'
+      +'</div>';
+  }
+  if (r.status === 'REFUND_COMPLETED') {
+    return '<div class="workflow-box completed">'
+      +'<span style="font-size:15px;">✓</span> <strong>Refund of '+rupee(r.refundAmount)+' completed.</strong>'
+      +'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Resolved on '+fmtDate(r.resolvedOn)+'.</div>'
+      +'</div>';
+  }
+  if (r.status === 'REJECTED') {
+    return '<div class="workflow-box rejected">'
+      +'<strong>Return Rejected</strong>'
+      +'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Resolved on '+fmtDate(r.resolvedOn)+'.</div>'
+      +'</div>';
+  }
+  return '';
+}
+
+function saveReturn(updated) {
+  const all = readReturns();
+  const idx = all.findIndex(function(x){ return x.returnId===updated.returnId; });
+  if (idx>-1) all[idx]=updated;
+  writeReturns(all);
+}
+
+function attachWorkflowHandlers(r) {
+  const approve = document.getElementById('wf-approve');
+  if (approve) {
+    approve.addEventListener('click', function(){
+      const updated = Object.assign({},r,{
+        status:'APPROVED',
+        refundMethod: document.getElementById('wf-method').value,
+        adminNotes:   document.getElementById('wf-notes').value.trim(),
+        resolvedOn:   new Date().toISOString(),
+      });
+      saveReturn(updated); openPanel(r.returnId); render();
+    });
+  }
+  const reject = document.getElementById('wf-reject');
+  if (reject) {
+    reject.addEventListener('click', function(){
+      const updated = Object.assign({},r,{
+        status:'REJECTED',
+        adminNotes: document.getElementById('wf-notes').value.trim(),
+        resolvedOn: new Date().toISOString(),
+      });
+      saveReturn(updated); openPanel(r.returnId); render();
+    });
+  }
+  const initiate = document.getElementById('wf-initiate');
+  if (initiate) {
+    initiate.addEventListener('click', function(){
+      const amt = parseFloat(document.getElementById('wf-amount').value)||r.refundAmount||0;
+      const updated = Object.assign({},r,{ status:'REFUND_INITIATED', refundAmount:amt });
+      saveReturn(updated); openPanel(r.returnId); render();
+    });
+  }
+  const complete = document.getElementById('wf-complete');
+  if (complete) {
+    complete.addEventListener('click', function(){
+      const updated = Object.assign({},r,{
+        status:'REFUND_COMPLETED',
+        resolvedOn: new Date().toISOString(),
+      });
+      saveReturn(updated); openPanel(r.returnId); render();
+    });
+  }
+}
+
+function closePanel() {
+  activeId = null;
+  document.getElementById('return-panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── Event wiring ──────────────────────────────────────────────────────────
+document.getElementById('rp-close').addEventListener('click', closePanel);
+document.getElementById('overlay').addEventListener('click', closePanel);
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('status-filter').addEventListener('change', render);
+document.getElementById('reason-filter').addEventListener('change', render);
+
+document.querySelectorAll('th[data-col]').forEach(function(th){
+  th.addEventListener('click', function(){
+    if(sortCol===th.dataset.col) sortDir*=-1;
+    else { sortCol=th.dataset.col; sortDir=-1; }
+    render();
+  });
+});
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.kebab-wrap'))
+    document.querySelectorAll('.kebab-menu.open').forEach(function(m){m.classList.remove('open');});
+});
+
+render();
+</script>
+</body>
+</html>

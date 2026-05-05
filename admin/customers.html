@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Customers · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Customers</h1>
+      </div>
+      <div class="topbar-actions">
+        <span id="cust-count" style="font-size:12px;color:var(--ink-muted);"></span>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="stat-grid" id="cust-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;"></div>
+      <div class="card">
+        <div class="card-header">
+          <h2>All Customers</h2>
+          <div class="search-box" style="max-width:280px;">
+            <span style="color:var(--ink-muted);font-size:14px;">⌕</span>
+            <input id="search" type="text" placeholder="Search name, email, city…"/>
+          </div>
+        </div>
+        <div class="card-body no-pad">
+          <table class="data-table" id="cust-table">
+            <thead><tr>
+              <th data-col="name">Customer <span class="si">↕</span></th>
+              <th>Contact</th>
+              <th>Location</th>
+              <th data-col="orders">Orders <span class="si">↕</span></th>
+              <th data-col="spend">Total Spend <span class="si">↕</span></th>
+              <th data-col="last">Last Order <span class="si">↕</span></th>
+              <th></th>
+            </tr></thead>
+            <tbody id="cust-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('customers');
+
+const esc = Admin.esc, rupee = Admin.rupee, fmtDate = Admin.fmtDate;
+const ORDERS_KEY = 'nazrani:orders:v1';
+
+function readOrders() {
+  try { return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); } catch(_){ return []; }
+}
+
+let sortCol = 'last', sortDir = -1;
+
+function buildCustomers(orders) {
+  const map = {};
+  orders.forEach(function(o) {
+    const email = (o.customer && o.customer.email) || 'unknown';
+    if (!map[email]) {
+      map[email] = {
+        name:  (o.customer && o.customer.name)  || '—',
+        email: email,
+        phone: (o.customer && o.customer.phone) || '—',
+        city:  (o.address  && o.address.city)   || '—',
+        state: (o.address  && o.address.state)  || '',
+        orders: 0, spend: 0, lastPlaced: null
+      };
+    }
+    map[email].orders++;
+    map[email].spend += (o.total || 0);
+    const d = new Date(o.placed);
+    if (!map[email].lastPlaced || d > new Date(map[email].lastPlaced)) map[email].lastPlaced = o.placed;
+  });
+  return Object.values(map);
+}
+
+function render() {
+  const orders = readOrders();
+  const customers = buildCustomers(orders);
+  const q = (document.getElementById('search').value||'').toLowerCase();
+
+  const filtered = customers.filter(function(c) {
+    return !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.city.toLowerCase().includes(q);
+  });
+
+  const sorted = filtered.slice().sort(function(a,b) {
+    if (sortCol==='name')   return sortDir * a.name.localeCompare(b.name);
+    if (sortCol==='orders') return sortDir * (a.orders - b.orders);
+    if (sortCol==='spend')  return sortDir * (a.spend  - b.spend);
+    if (sortCol==='last')   return sortDir * (new Date(a.lastPlaced) - new Date(b.lastPlaced));
+    return 0;
+  });
+
+  document.getElementById('cust-count').textContent = customers.length + ' unique customers';
+
+  // Stats
+  const totalSpend = customers.reduce(function(s,c){ return s+c.spend; },0);
+  const repeat     = customers.filter(function(c){ return c.orders > 1; }).length;
+  const aov        = orders.length ? Math.round(totalSpend/orders.length) : 0;
+  document.getElementById('cust-stats').innerHTML = [
+    { label: 'Total Customers',   value: customers.length, sub: repeat + ' repeat buyers' },
+    { label: 'Total Revenue',     value: rupee(totalSpend), sub: 'From all customers' },
+    { label: 'Avg Order Value',   value: rupee(aov), sub: 'Per order' },
+  ].map(function(s){
+    return '<div class="stat-card"><div class="label">'+s.label+'</div><div class="value">'+s.value+'</div><div class="sub">'+s.sub+'</div></div>';
+  }).join('');
+
+  // Update sort icons
+  document.querySelectorAll('th[data-col]').forEach(function(th) {
+    th.classList.toggle('sorted', th.dataset.col===sortCol);
+    const si = th.querySelector('.si');
+    if (si) si.textContent = th.dataset.col===sortCol ? (sortDir===-1?'↓':'↑') : '↕';
+  });
+
+  document.getElementById('cust-body').innerHTML = sorted.map(function(c) {
+    const repeatBadge = c.orders > 1 ? '<span class="badge badge-green" style="margin-left:6px;">Repeat</span>' : '';
+    return '<tr>'
+      + '<td><div class="td-primary">' + esc(c.name) + repeatBadge + '</div></td>'
+      + '<td><div>' + esc(c.email) + '</div><div style="font-size:11px;color:var(--ink-muted);">' + esc(c.phone) + '</div></td>'
+      + '<td>' + esc(c.city) + (c.state ? ', '+esc(c.state) : '') + '</td>'
+      + '<td style="font-weight:600;">' + c.orders + '</td>'
+      + '<td class="td-amt">' + rupee(c.spend) + '</td>'
+      + '<td class="td-mono" style="font-size:11px;">' + fmtDate(c.lastPlaced) + '</td>'
+      + '<td class="td-actions">'
+      +   '<a href="orders.html" class="btn btn-ghost btn-sm">Orders →</a>'
+      + '</td>'
+      + '</tr>';
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink-muted);">No customers yet</td></tr>';
+}
+
+document.querySelectorAll('th[data-col]').forEach(function(th) {
+  th.addEventListener('click', function() {
+    if (sortCol===th.dataset.col) sortDir*=-1;
+    else { sortCol=th.dataset.col; sortDir=-1; }
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input', render);
+render();
+</script>
+</body>
+</html>

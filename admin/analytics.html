@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Analytics · Nazrani Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/admin.css"/>
+<style>
+.donut-wrap { position:relative; width:120px; height:120px; flex-shrink:0; }
+.donut-wrap svg { transform:rotate(-90deg); }
+.donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; color:var(--ink-muted); text-align:center; }
+.donut-center strong { font-size:18px; color:var(--ink); display:block; }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <div id="admin-sidebar"></div>
+  <main class="admin-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Nazrani Heritage</div>
+        <h1>Sales Analytics</h1>
+      </div>
+      <div class="topbar-actions">
+        <select id="period-sel" class="filter-select" style="font-size:12px;">
+          <option value="6">Last 6 months</option>
+          <option value="3">Last 3 months</option>
+          <option value="12">Last 12 months</option>
+        </select>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="stat-grid" id="kpi-grid" style="margin-bottom:24px;"></div>
+
+      <!-- Revenue trend + Category split -->
+      <div class="two-col" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-header"><h2>Revenue by Month</h2></div>
+          <div class="card-body">
+            <div class="bar-chart" id="rev-chart" style="height:160px;"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2>Orders by Month</h2></div>
+          <div class="card-body">
+            <div class="bar-chart" id="ord-chart" style="height:160px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top products + Category breakdown -->
+      <div class="two-col" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-header"><h2>Top Products by Revenue</h2></div>
+          <div class="card-body no-pad">
+            <table class="data-table" id="top-products"></table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2>Revenue by Category</h2></div>
+          <div class="card-body" id="cat-breakdown" style="display:flex;align-items:center;gap:28px;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+
+      <!-- Order status + AOV trend -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><h2>Fulfillment Breakdown</h2></div>
+          <div class="card-body" id="fulfillment"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2>Key Metrics</h2></div>
+          <div class="card-body" id="key-metrics"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/data-service.js"></script>
+<script src="assets/admin.js"></script>
+<script>
+Admin.requireAuth();
+Admin.renderSidebar('analytics');
+
+const rupee = Admin.rupee, esc = Admin.esc, fmtDate = Admin.fmtDate;
+const ORDERS_KEY = 'nazrani:orders:v1';
+const CAT_COLORS = { Spices:'#2c5239', Staples:'#a88a4a', Ayurveda:'#1a5276', 'Health Foods':'#7d3c98' };
+
+function readOrders() { try{ return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }catch(_){ return []; } }
+
+function getMonths(n) {
+  const months = [];
+  for (var i = n-1; i >= 0; i--) {
+    var d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-i);
+    months.push({ label: d.toLocaleString('en-IN',{month:'short'}), year: d.getFullYear(), month: d.getMonth() });
+  }
+  return months;
+}
+
+function render() {
+  const n = parseInt(document.getElementById('period-sel').value, 10);
+  const allOrders = readOrders();
+  const months = getMonths(n);
+
+  // Filter to period
+  const cutoff = new Date(); cutoff.setDate(1); cutoff.setMonth(cutoff.getMonth()-(n-1));
+  const orders = allOrders.filter(function(o){ return o.placed && new Date(o.placed) >= cutoff; });
+
+  const totalRev  = orders.reduce(function(s,o){ return s+(o.total||0); },0);
+  const totalOrd  = orders.length;
+  const aov       = totalOrd ? Math.round(totalRev/totalOrd) : 0;
+  const delivered = orders.filter(function(o){ return o.status==='DELIVERED'; }).length;
+
+  // KPIs
+  document.getElementById('kpi-grid').innerHTML = [
+    { label: 'Revenue (period)',   value: rupee(totalRev), sub: n + '-month window' },
+    { label: 'Orders (period)',    value: totalOrd, sub: delivered + ' delivered' },
+    { label: 'Avg Order Value',    value: rupee(aov), sub: 'Per order' },
+    { label: 'Unique Customers',   value: new Set(orders.map(function(o){ return o.customer&&o.customer.email; })).size, sub: 'In this period' },
+  ].map(function(s){
+    return '<div class="stat-card"><div class="label">'+s.label+'</div><div class="value">'+s.value+'</div><div class="sub">'+s.sub+'</div></div>';
+  }).join('');
+
+  // Monthly revenue chart
+  const monthRev = months.map(function(m){
+    return orders.filter(function(o){ var d=new Date(o.placed); return d.getMonth()===m.month&&d.getFullYear()===m.year; })
+      .reduce(function(s,o){ return s+(o.total||0); },0);
+  });
+  const maxRev = Math.max.apply(null,monthRev)||1;
+  document.getElementById('rev-chart').innerHTML = monthRev.map(function(v,i){
+    var pct=Math.round(v/maxRev*100);
+    return '<div class="bar-col"><div class="bar-val" style="font-size:9px;">'+(v?rupee(v):'')+'</div>'
+      +'<div class="bar" style="height:'+Math.max(pct,2)+'%;background:var(--green);"></div>'
+      +'<div class="bar-label">'+months[i].label+'</div></div>';
+  }).join('');
+
+  // Monthly order count chart
+  const monthOrd = months.map(function(m){
+    return orders.filter(function(o){ var d=new Date(o.placed); return d.getMonth()===m.month&&d.getFullYear()===m.year; }).length;
+  });
+  const maxOrd = Math.max.apply(null,monthOrd)||1;
+  document.getElementById('ord-chart').innerHTML = monthOrd.map(function(v,i){
+    var pct=Math.round(v/maxOrd*100);
+    return '<div class="bar-col"><div class="bar-val" style="font-size:9px;">'+(v||'')+'</div>'
+      +'<div class="bar" style="height:'+Math.max(pct,2)+'%;background:var(--gold);"></div>'
+      +'<div class="bar-label">'+months[i].label+'</div></div>';
+  }).join('');
+
+  // Top products
+  const prodRev = {};
+  orders.forEach(function(o){
+    (o.items||[]).forEach(function(it){
+      if (!prodRev[it.name]) prodRev[it.name] = { name:it.name, rev:0, qty:0, cat:it.category||'' };
+      prodRev[it.name].rev += it.lineTotal||0;
+      prodRev[it.name].qty += it.qty||0;
+    });
+  });
+  const topProds = Object.values(prodRev).sort(function(a,b){ return b.rev-a.rev; }).slice(0,8);
+  const maxPRev = topProds.length ? topProds[0].rev : 1;
+  document.getElementById('top-products').innerHTML =
+    '<thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th><th style="width:120px;"></th></tr></thead>'
+    +'<tbody>'+ topProds.map(function(p){
+      var pct=Math.round(p.rev/maxPRev*100);
+      return '<tr><td class="td-primary">'+esc(p.name)+'<div style="font-size:10px;color:var(--ink-muted);">'+esc(p.cat)+'</div></td>'
+        +'<td>'+p.qty+'</td>'
+        +'<td class="td-amt">'+rupee(p.rev)+'</td>'
+        +'<td><div class="stock-bar"><div class="stock-bar-fill" style="width:'+pct+'%;"></div></div></td></tr>';
+    }).join('') + (topProds.length ? '' : '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--ink-muted);">No data yet</td></tr>')
+    +'</tbody>';
+
+  // Category breakdown donut
+  const catRev = {};
+  orders.forEach(function(o){
+    (o.items||[]).forEach(function(it){
+      var c=it.category||'Other';
+      catRev[c]=(catRev[c]||0)+(it.lineTotal||0);
+    });
+  });
+  const catTotal = Object.values(catRev).reduce(function(s,v){ return s+v; },0)||1;
+  const cats = Object.keys(catRev).sort(function(a,b){ return catRev[b]-catRev[a]; });
+  const circumference = 2*Math.PI*45;
+  let offset = 0;
+  const segments = cats.map(function(c){
+    var frac = catRev[c]/catTotal;
+    var dash = frac*circumference;
+    var seg = '<circle cx="60" cy="60" r="45" fill="none" stroke="'+(CAT_COLORS[c]||'#ccc')+'" stroke-width="18"'
+      +' stroke-dasharray="'+dash+' '+(circumference-dash)+'"'
+      +' stroke-dashoffset="-'+offset+'"/>';
+    offset += dash;
+    return seg;
+  }).join('');
+  const legendHTML = cats.map(function(c){
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+      +'<div class="legend-dot" style="background:'+(CAT_COLORS[c]||'#ccc')+'"></div>'
+      +'<div style="font-size:12px;flex:1;">'+esc(c)+'</div>'
+      +'<div style="font-size:12px;font-weight:600;">'+rupee(catRev[c])+'</div>'
+      +'</div>';
+  }).join('');
+  document.getElementById('cat-breakdown').innerHTML = catTotal > 0
+    ? '<div class="donut-wrap"><svg viewBox="0 0 120 120" width="120" height="120">'+segments+'</svg>'
+      +'<div class="donut-center"><strong>'+cats.length+'</strong>cats</div></div>'
+      +'<div style="flex:1;">'+legendHTML+'</div>'
+    : '<p style="color:var(--ink-muted);">No data yet.</p>';
+
+  // Fulfillment
+  const STATUSES = ['DELIVERED','IN TRANSIT','YET TO SHIP','CANCELLED'];
+  const SCOLS    = ['var(--green)','var(--amber)','var(--ink-muted)','var(--red)'];
+  document.getElementById('fulfillment').innerHTML = STATUSES.map(function(s,i){
+    var cnt=orders.filter(function(o){ return (o.status||'YET TO SHIP')===s; }).length;
+    var pct=totalOrd ? Math.round(cnt/totalOrd*100) : 0;
+    return '<div style="margin-bottom:14px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">'
+      +'<span>'+s+'</span><span style="font-weight:600;">'+cnt+' <span style="color:var(--ink-muted);font-weight:400;">('+pct+'%)</span></span></div>'
+      +'<div style="height:6px;background:var(--border);border-radius:99px;">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+SCOLS[i]+';border-radius:99px;"></div>'
+      +'</div></div>';
+  }).join('');
+
+  // Key metrics
+  const emails = orders.map(function(o){ return o.customer&&o.customer.email; }).filter(Boolean);
+  const unique  = new Set(emails).size;
+  const repeat  = unique ? (emails.length-unique) : 0;
+  const maxSingleOrder = orders.reduce(function(m,o){ return Math.max(m,o.total||0); },0);
+  document.getElementById('key-metrics').innerHTML = [
+    { k:'Total orders (period)',    v: totalOrd },
+    { k:'Unique customers',         v: unique },
+    { k:'Repeat orders',            v: repeat },
+    { k:'Total revenue (period)',   v: rupee(totalRev) },
+    { k:'Average order value',      v: rupee(aov) },
+    { k:'Highest single order',     v: rupee(maxSingleOrder) },
+    { k:'Free shipping orders',     v: orders.filter(function(o){ return o.shipping===0; }).length },
+  ].map(function(r){
+    return '<div class="kv-row" style="padding:8px 0;border-bottom:1px solid var(--border);"><span class="k">'+r.k+'</span><span class="v">'+r.v+'</span></div>';
+  }).join('');
+}
+
+document.getElementById('period-sel').addEventListener('change', render);
+render();
+</script>
+</body>
+</html>
