@@ -21,6 +21,12 @@
       <div class="journal-grid" id="journal-grid" role="list"></div>
     </div>
   </section>
+  <section class="categories" aria-label="Continue exploring">
+    <div class="container">
+      <div class="head" id="docs-next-head"></div>
+      <div class="cat-grid" id="docs-next-grid"></div>
+    </div>
+  </section>
 </main>
 
 <div id="app-footer"></div>
@@ -55,6 +61,8 @@
       '</a>';
     }).join('');
   });
+
+  Nazrani.renderDocsContinue('journal');
 })();
 </script>
 

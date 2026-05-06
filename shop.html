@@ -50,10 +50,12 @@
 
   const qs = new URLSearchParams(location.search);
   let activeCat  = qs.get('cat')  || 'All';
+  let activeSrc  = qs.get('src')  || 'All';
   let activeSort = qs.get('sort') || 'default';
 
-  const cats = await DataService.getCategories();
-  const all  = await DataService.getProducts({});
+  const cats    = await DataService.getCategories();
+  const sources = await DataService.getSources();
+  const all     = await DataService.getProducts({});
 
   const sideCats = document.getElementById('shop-side');
   sideCats.innerHTML = `
@@ -66,9 +68,14 @@
         <span>${esc(c.name)}</span><span class="ct">${c.count}</span>
       </li>`).join('')}
     </ul>
-    <h4>${esc(C.sidebar.sourcingHeader)}</h4>
-    <ul>
-      ${C.sidebar.sourcing.map(s => `<li><span>${esc(s.label)}</span><span class="ct">${esc(s.ct)}</span></li>`).join('')}
+    <h4>${esc(C.sidebar.sourcesHeader)}</h4>
+    <ul id="side-srcs">
+      <li class="${activeSrc === 'All' ? 'active' : ''}" data-src="All">
+        <span>${esc(C.sidebar.allSourcesLabel)}</span><span class="ct">${all.length}</span>
+      </li>
+      ${sources.map(s => `<li class="${s.name === activeSrc ? 'active' : ''}" data-src="${esc(s.name)}">
+        <span>${esc(s.name)}</span><span class="ct">${s.count}</span>
+      </li>`).join('')}
     </ul>`;
 
   const sortEl = document.getElementById('sort-by');
@@ -84,11 +91,20 @@
     sideUl.querySelectorAll('li').forEach(x => x.classList.toggle('active', x.dataset.cat === activeCat));
     sync(); render();
   });
+  const sideSrc = document.getElementById('side-srcs');
+  sideSrc.addEventListener('click', e => {
+    const li = e.target.closest('li[data-src]');
+    if (!li) return;
+    activeSrc = li.dataset.src;
+    sideSrc.querySelectorAll('li').forEach(x => x.classList.toggle('active', x.dataset.src === activeSrc));
+    sync(); render();
+  });
   sortEl.addEventListener('change', e => { activeSort = e.target.value; sync(); render(); });
 
   function sync() {
     const params = new URLSearchParams();
     if (activeCat  && activeCat  !== 'All')     params.set('cat',  activeCat);
+    if (activeSrc  && activeSrc  !== 'All')     params.set('src',  activeSrc);
     if (activeSort && activeSort !== 'default') params.set('sort', activeSort);
     history.replaceState(null, '', location.pathname + (params.toString() ? ('?' + params.toString()) : ''));
   }
@@ -99,11 +115,13 @@
   async function render() {
     const list = await DataService.getProducts({
       category: activeCat,
+      source:   activeSrc,
       sort: activeSort === 'default' ? null : activeSort
     });
     document.getElementById('result-count').textContent =
       list.length + ' ' + (list.length === 1 ? 'PRODUCT' : 'PRODUCTS') +
-      (activeCat !== 'All' ? ' · ' + activeCat.toUpperCase() : '');
+      (activeCat !== 'All' ? ' · ' + activeCat.toUpperCase() : '') +
+      (activeSrc !== 'All' ? ' · ' + activeSrc.toUpperCase() : '');
     if (!list.length) {
       grid.innerHTML = '<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--ink-muted);font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;">' + esc(C.empty) + '</div>';
       return;

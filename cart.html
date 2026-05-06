@@ -58,6 +58,12 @@
       const media = it.image
         ? '<img src="' + it.image + '" alt="' + esc(it.name) + '" loading="lazy"/>'
         : (typeof productIllustration === 'function' ? productIllustration(it.id) : '');
+      const totalGrams = (it.weightGrams || 0) * it.qty;
+      const totalWeight = totalGrams >= 1000
+        ? (totalGrams / 1000).toFixed(totalGrams % 1000 === 0 ? 0 : 2) + ' kg'
+        : totalGrams + ' g';
+      const breakdown = `${Nazrani.rupee(it.unitPrice)} × ${it.qty} pack${it.qty === 1 ? '' : 's'}`
+        + (it.weightGrams ? ` &middot; ${totalWeight} total` : '');
       return `<div class="cart-line" data-id="${it.id}">
         <a href="product.html?id=${it.id}" class="img" aria-label="View ${esc(it.name)}">${media}</a>
         <div>
@@ -73,13 +79,12 @@
             <button class="remove" data-remove type="button">Remove</button>
           </div>
         </div>
-        <div class="amt">${Nazrani.rupee(it.lineTotal)}</div>
+        <div class="amt">
+          <div class="cart-breakdown">${breakdown}</div>
+          ${Nazrani.rupee(it.lineTotal)}
+        </div>
       </div>`;
     }).join('');
-
-    const shipNote = cart.shipping === 0
-      ? esc(ui.cartShippingFree)
-      : esc(ui.cartShippingBelow(Nazrani.rupee(DATA.config.shipping.freeAbove - cart.subtotal)));
 
     body.innerHTML = `
       <div class="grid">
@@ -91,11 +96,19 @@
         <aside>
           <div class="summary-card">
             <h3>${esc(C.summaryTitle)}</h3>
-            <div class="row"><span>Subtotal</span><span>${Nazrani.rupee(cart.subtotal)}</span></div>
-            <div class="row"><span>Shipping</span><span>${cart.shipping === 0 ? 'Free' : Nazrani.rupee(cart.shipping)}</span></div>
-            <div class="row bold"><span>Total</span><span class="v">${Nazrani.rupee(cart.total)}</span></div>
+            ${cart.items.map(it => `
+              <div class="row" style="align-items:flex-start;">
+                <span style="flex:1;padding-right:12px;">
+                  <span style="display:block;">${esc(it.name)}</span>
+                  <span style="display:block;font-size:12px;color:var(--ink-muted);margin-top:2px;">${Nazrani.rupee(it.unitPrice)} × ${it.qty}</span>
+                </span>
+                <span>${Nazrani.rupee(it.lineTotal)}</span>
+              </div>`).join('')}
+            <div class="row subtotal"><span>Subtotal</span><span class="v">${Nazrani.rupee(cart.subtotal)}</span></div>
+            <div class="row shipping"><span>Shipping</span><span style="opacity:.7;">Calculated at checkout</span></div>
+            <div class="row bold"><span>Total</span><span class="v">${Nazrani.rupee(cart.subtotal)}</span></div>
             <button class="checkout-btn" id="cart-checkout-btn" type="button">${esc(C.checkoutLabel)}</button>
-            <div class="note">${shipNote}<br/>${esc(C.dispatchNote)}</div>
+            <div class="note">${esc(C.taxNote)}</div>
           </div>
         </aside>
       </div>`;

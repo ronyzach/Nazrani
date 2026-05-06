@@ -38,6 +38,9 @@
     if (opts.category && opts.category !== 'All') {
       list = list.filter((p) => p.category === opts.category);
     }
+    if (opts.source && opts.source !== 'All') {
+      list = list.filter((p) => p.sourcedFrom === opts.source);
+    }
     if (opts.search) {
       const q = opts.search.toLowerCase().trim();
       list = list.filter((p) =>
@@ -50,6 +53,10 @@
     if (opts.sort === 'price-asc')  list.sort((a, b) => a.price - b.price);
     if (opts.sort === 'price-desc') list.sort((a, b) => b.price - a.price);
     if (opts.sort === 'name')       list.sort((a, b) => a.name.localeCompare(b.name));
+    if (opts.sort === 'source')     list.sort((a, b) =>
+      (a.sourcedFrom || '').localeCompare(b.sourcedFrom || '') ||
+      a.name.localeCompare(b.name)
+    );
     if (opts.limit)                 list = list.slice(0, opts.limit);
     return list;
   }
@@ -83,6 +90,19 @@
 
   /** @endpoint  GET /api/categories */
   async function getCategories() { return DB().categories.slice(); }
+  /**
+   * Unique sourcing partners with product counts. Derived from products.
+   * @endpoint  GET /api/sources
+   * @returns {Promise<Array<{name:string, count:number}>>}
+   */
+  async function getSources() {
+    const counts = {};
+    DB().products.forEach((p) => {
+      const s = p.sourcedFrom || 'Unknown';
+      counts[s] = (counts[s] || 0) + 1;
+    });
+    return Object.keys(counts).sort().map((name) => ({ name: name, count: counts[name] }));
+  }
   /** @endpoint  GET /api/standard */
   async function getStandard()   { return DB().standard.slice(); }
   /** @endpoint  GET /api/provenance */
@@ -479,7 +499,7 @@
   // ============================================================
   global.DataService = {
     // Catalogue
-    getProducts, getProduct, getRelated, getCategories,
+    getProducts, getProduct, getRelated, getCategories, getSources,
     // Content
     getStandard, getProvenance, getJournal, getArticle,
     // Cart

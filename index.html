@@ -49,7 +49,7 @@
     <div>
       <div class="eyebrow"><span class="stem">${esc(C.hero.eyebrow)}</span></div>
       <h1 id="hero-title">${esc(C.hero.titleA)}<br/><span class="hero-line2"><span class="serif-i accent">${esc(C.hero.titleB)}</span>${esc(C.hero.titleC)}</span></h1>
-      <p class="lede">${esc(C.hero.lede)}</p>
+      ${C.hero.lede.split('\n').map((p, i) => `<p class="lede"${i > 0 ? ' style="margin-top:14px;"' : ''}>${esc(p)}</p>`).join('')}
       <div class="cta">
         <a href="${C.hero.ctaPrimary.href}" class="btn primary">${esc(C.hero.ctaPrimary.label)}</a>
         <a href="${C.hero.ctaGhost.href}" class="btn btn-light">${esc(C.hero.ctaGhost.label)}</a>
@@ -89,6 +89,7 @@
     </div>
     <div class="col-r">
       <p class="lede">${C.story.lede}</p>
+      ${C.story.paragraphs.map(p => '<p>' + esc(p) + '</p>').join('')}
       <a href="about.html" class="more">Read our full story →</a>
     </div>`;
 

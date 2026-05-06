@@ -113,19 +113,32 @@
   function renderHeader(active) {
     const data = DB();
     const navHtml = (data.nav || []).map(function (n) {
-      return '<a href="' + n.href + '" class="navlink' + (n.id === active ? ' active' : '') + '">' + esc(n.label) + '</a>';
+      const childActive = n.children && n.children.some(function (c) { return c.id === active; });
+      const isActive = n.id === active || childActive;
+      const activeCls = isActive ? ' active' : '';
+      if (!n.children || !n.children.length) {
+        return '<a href="' + n.href + '" class="navlink' + activeCls + '">' + esc(n.label) + '</a>';
+      }
+      const childLinks = n.children.map(function (c) {
+        return '<a href="' + c.href + '" class="dropdown-link' + (c.id === active ? ' active' : '') + '" role="menuitem">' + esc(c.label) + '</a>';
+      }).join('');
+      const caret = ' <span class="caret" aria-hidden="true">▾</span>';
+      const parentTag = n.href
+        ? '<a href="' + n.href + '" class="navlink' + activeCls + '" aria-haspopup="true">' + esc(n.label) + caret + '</a>'
+        : '<button type="button" class="navlink navlink-btn' + activeCls + '" aria-haspopup="true" aria-expanded="false">' + esc(n.label) + caret + '</button>';
+      return '<div class="navitem has-children' + (n.href ? '' : ' parent-no-href') + '">'
+        + parentTag
+        + '<div class="dropdown" role="menu">' + childLinks + '</div>'
+        + '</div>';
     }).join('');
     return ''
       + '<header class="site-header" role="banner">'
       +   '<div class="container row">'
-      +     '<nav aria-label="Main">' + navHtml + '</nav>'
       +     '<a href="index.html" class="wordmark" aria-label="' + esc(data.brand.name + ' — home') + '">'
       +       '<div class="name">' + esc(data.brand.name) + '</div>'
       +       '<div class="sub">' + esc(data.brand.tagline) + '</div>'
       +     '</a>'
-      +     '<div class="utility">'
-      +       '<a href="contact.html">Contact</a>'
-      +     '</div>'
+      +     '<nav aria-label="Main">' + navHtml + '</nav>'
       +   '</div>'
       + '</header>';
   }
@@ -289,8 +302,7 @@
       ? '<img class="cover" src="' + p.image + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async"/>' +
         '<div aria-hidden="true" data-overlay class="img-overlay"></div>'
       : (typeof productIllustration === 'function' ? productIllustration(p.id) : '');
-    const giBadge = p.gi
-      ? '<div class="badge-tl"><span class="tag tag-gold">GI · ' + esc(p.origin) + '</span></div>' : '';
+    const giBadge = '';
     return ''
       + '<a href="product.html?id=' + p.id + '" class="product-card" data-pid="' + p.id + '">'
       +   '<div class="lot-strip">'
@@ -300,7 +312,6 @@
       +   '<div class="img-wrap">'
       +     '<div class="placeholder' + (hasImg ? ' has-image' : '') + '" style="aspect-ratio:1/1;">'
       +       media + giBadge
-      +       '<div class="badge-tr"><span class="tag">' + esc(p.organic) + '</span></div>'
       +     '</div>'
       +   '</div>'
       +   '<div class="info">'
@@ -391,6 +402,42 @@
     });
   }
 
+  /**
+   * Render a "Continue exploring" cross-link section for documentation pages.
+   * Excludes the current page; always appends "Talk to us" as the closing tile.
+   * Expects #docs-next-head and #docs-next-grid in the DOM.
+   * @param {string} currentId — one of: 'standard' | 'origins' | 'journal'
+   */
+  function renderDocsContinue(currentId) {
+    const docs = [
+      { id: 'contact',  name: 'Talk to us',   desc: 'care@nazrani.com\n+91 98840 90151\nKerala, India',                            cta: 'Write to us',       href: 'contact.html' },
+      { id: 'standard', name: 'The Standard', desc: 'The five public checks every product clears before it earns the Nazrani name.', cta: 'Read the Standard', href: 'standard.html' },
+      { id: 'origins',  name: 'Origins',      desc: 'The villages and estates where each lot begins.',                              cta: 'See the map',       href: 'origins.html' },
+      { id: 'journal',  name: 'Journal',      desc: 'Field notes, harvest letters, and the occasional recipe from the people behind the produce.', cta: 'Read the journal', href: 'journal.html' }
+    ];
+    const list = docs.filter(function (d) { return d.id !== currentId; });
+    const head = document.getElementById('docs-next-head');
+    const grid = document.getElementById('docs-next-grid');
+    if (head) {
+      head.innerHTML = '<div>'
+        + '<div class="eyebrow">Continue</div>'
+        + '<h2>Where to <span class="serif-i">go from here.</span></h2>'
+        + '</div>';
+    }
+    if (grid) {
+      grid.innerHTML = list.map(function (t, i) {
+        return '<a href="' + t.href + '" class="catcard" aria-label="' + esc(t.name) + ' — ' + esc(t.cta) + '">'
+          + '<div class="meta">' + pad2(i + 1) + ' · ' + esc(t.name).toUpperCase() + '</div>'
+          + '<div class="body">'
+          +   '<div class="name">' + esc(t.name) + '</div>'
+          +   '<div class="desc">' + esc(t.desc).replace(/\n/g, '<br>') + '</div>'
+          + '</div>'
+          + '<div class="cta">' + esc(t.cta) + ' <span class="arr">→</span></div>'
+          + '</a>';
+      }).join('');
+    }
+  }
+
   // ----------------------------------------------------------------- export
   global.Nazrani = {
     init: init,
@@ -403,6 +450,7 @@
     productCardHTML: productCardHTML,
     wireAddToCart: wireAddToCart,
     updateCartBadge: updateCartBadge,
+    renderDocsContinue: renderDocsContinue,
     DB: DB
   };
 })(window);

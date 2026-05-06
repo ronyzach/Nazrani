@@ -67,11 +67,13 @@
     /*  TOP NAVIGATION                                                     */
     /* ------------------------------------------------------------------ */
     nav: [
-      { id: 'shop',     label: 'Shop',         href: 'shop.html' },
-      { id: 'about',    label: 'About',        href: 'about.html' },
-      { id: 'standard', label: 'The Standard', href: 'standard.html' },
-      { id: 'origins',  label: 'Origins',      href: 'origins.html' },
-      { id: 'journal',  label: 'Journal',      href: 'journal.html' }
+      { id: 'shop',  label: 'Shop',     href: 'shop.html' },
+      { id: 'about', label: 'About Us', href: 'about.html' },
+      { id: 'docs',  label: 'Documentation', children: [
+        { id: 'standard', label: 'The Standard', href: 'standard.html' },
+        { id: 'origins',  label: 'Origins',      href: 'origins.html' },
+        { id: 'journal',  label: 'Journal',      href: 'journal.html' }
+      ]}
     ],
 
     /* ------------------------------------------------------------------ */
@@ -167,7 +169,7 @@
             titleA:      'What we sell,',
             titleB:      'we serve',
             titleC:      ' at our own table.',
-            lede:        'Aromatic spices, wholesome grains, Ayurvedic herbs, and sun-ripened fruits from the hills of Kerala — grown the natural way, traced back to the farm and family who raised them, and held to a merchant standard older than any certification. What reaches your table is food at its fullest — full of flavour, full of nutrition, and safe enough for the people you love most.',
+            lede:        'Aromatic spices, wholesome grains, Ayurvedic herbs, and sun-ripened fruits from the hills of Kerala — grown the natural way, traced back to the farm and family who raised them, and held to a merchant standard older than any certification.\nWhat reaches your table is food at its fullest — full of flavour, full of nutrition, and safe enough for the people you love most.',
             ctaPrimary:  { label: 'Shop the catalogue →', href: 'shop.html' },
             ctaGhost:    { label: 'Read the Standard',    href: 'standard.html' },
             trust: [
@@ -298,6 +300,7 @@
             titleA:  'Where to ',
             titleB:  'go from here.',
             tiles: [
+              { name: 'Talk to us',   desc: 'care@nazrani.com\n+91 98840 90151\nKerala, India',                  cta: 'Write to us',       href: 'contact.html' },
               { name: 'The Standard', desc: 'The five checks every product clears before it earns the name.',  cta: 'Read the Standard', href: 'standard.html' },
               { name: 'Origins',      desc: 'The villages and estates where each lot begins.',                  cta: 'See the map',       href: 'origins.html' },
               { name: 'Products',     desc: 'Sixteen single-origin items across four categories.',              cta: 'Shop the catalogue', href: 'shop.html' }
@@ -317,11 +320,8 @@
           sidebar: {
             categoriesHeader: 'Categories',
             allLabel:         'All produce',
-            sourcingHeader:   'Sourcing',
-            sourcing: [
-              { label: 'GI tagged',     ct: 'verified' },
-              { label: 'India Organic', ct: 'npop' }
-            ]
+            sourcesHeader:    'Sources',
+            allSourcesLabel:  'All sources'
           },
           empty: 'No matches in this category'
         },
@@ -333,7 +333,8 @@
           titleB: 'cart.',
           summaryTitle: 'Order summary',
           checkoutLabel: 'Proceed to checkout →',
-          dispatchNote: 'Dispatched within 48 hours from Kottayam.'
+          dispatchNote: 'Dispatched within 48 hours from Kottayam.',
+          taxNote:      'Prices include all applicable taxes (GST).'
         },
 
         login: {
@@ -357,11 +358,11 @@
           crumbs: 'Checkout',
           title:  'Checkout',
           sections: {
-            contact: '01 · Contact',
-            address: '02 · Shipping address',
-            payment: '03 · Payment'
+            contact: 'Contact',
+            address: 'Shipping address',
+            payment: 'Payment'
           },
-          submitLabel: 'Place order →',
+          submitLabel: 'Make payment →',
           summaryTitle: 'Your order',
           dispatch: 'Dispatched within 48 hours from Kottayam.',
           delivery: 'Delivered in 4–7 business days.',
@@ -537,8 +538,7 @@
         methods: [
           { id: 'upi',         name: 'UPI',                   sub: 'Recommended · Instant confirmation' },
           { id: 'card',        name: 'Credit / Debit Card',   sub: 'Visa · MasterCard · RuPay' },
-          { id: 'netbanking',  name: 'Net Banking',           sub: 'All major Indian banks' },
-          { id: 'cod',         name: 'Cash on Delivery',      sub: '+ ₹30 handling · serviceable pincodes only' }
+          { id: 'netbanking',  name: 'Net Banking',           sub: 'All major Indian banks' }
         ],
         default: 'upi'
       },
@@ -546,7 +546,8 @@
         { id: 'default',     label: 'Sort: Featured' },
         { id: 'price-asc',   label: 'Price · Low to High' },
         { id: 'price-desc',  label: 'Price · High to Low' },
-        { id: 'name',        label: 'Name · A to Z' }
+        { id: 'name',        label: 'Name · A to Z' },
+        { id: 'source',      label: 'Source · A to Z' }
       ],
       cartLimit: 20,          // max qty per line
       orderIdPrefix: 'NZR-',

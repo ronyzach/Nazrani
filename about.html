@@ -122,7 +122,7 @@
       <div class="meta">${pad2(i + 1)} · ${esc(t.name).toUpperCase()}</div>
       <div class="body">
         <div class="name">${esc(t.name)}</div>
-        <div class="desc">${esc(t.desc)}</div>
+        <div class="desc">${esc(t.desc).replace(/\n/g, '<br>')}</div>
       </div>
       <div class="cta">${esc(t.cta)} <span class="arr">→</span></div>
     </a>`).join('');

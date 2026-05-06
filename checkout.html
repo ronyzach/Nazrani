@@ -63,9 +63,19 @@
     </label>`).join('');
 
   const CL = DATA.copy.pages.login;
+  const initial = (user.name || 'U').trim().charAt(0).toUpperCase();
+  const provider = (user.provider || 'google');
+  const providerLabel = provider.charAt(0).toUpperCase() + provider.slice(1);
   const authBannerHtml = user.guest
     ? `<div class="auth-banner">${esc(CL.bannerGuest)}<a href="login.html?next=checkout.html">${esc(CL.bannerSwitch)}</a></div>`
-    : `<div class="auth-banner auth-banner-in"><span class="auth-provider auth-provider-${esc(user.provider || 'google')}"></span>${esc(CL.bannerIn)} <strong>${esc(user.name)}</strong> · ${esc(user.email)} · <a href="#" id="ck-signout">Sign out</a></div>`;
+    : `<div class="auth-banner auth-banner-in">
+        <div class="auth-avatar">${esc(initial)}</div>
+        <div class="auth-text">
+          <div class="auth-hello">Welcome back, <strong>${esc(user.name)}</strong></div>
+          <div class="auth-sub">${esc(user.email)} · signed in via ${esc(providerLabel)}</div>
+        </div>
+        <a href="#" id="ck-signout" class="auth-signout">Sign out</a>
+      </div>`;
 
   const req = '<span class="req" aria-hidden="true">*</span>';
   grid.innerHTML = `
@@ -75,20 +85,21 @@
       <div class="field-group">
         <h3>${esc(C.sections.contact)}</h3>
         <div class="form-grid">
-          <div class="field full"><label for="ck-email">Email address ${req}</label><input id="ck-email" type="email" required aria-required="true" autocomplete="email" placeholder="rony@example.in"/></div>
-          <div class="field"><label for="ck-name">Full name ${req}</label><input id="ck-name" type="text" required aria-required="true" autocomplete="name" placeholder="Rony Zachariah"/></div>
-          <div class="field"><label for="ck-phone">Phone (10 digits) ${req}</label><input id="ck-phone" type="tel" required aria-required="true" pattern="[0-9]{10}" maxlength="10" autocomplete="tel" placeholder="9876543210"/></div>
+          <div class="field full"><label for="ck-name">Full name ${req}</label><input id="ck-name" type="text" required aria-required="true" autocomplete="name" placeholder="Rony Zachariah"/></div>
+          <div class="field c-7"><label for="ck-email">Email address ${req}</label><input id="ck-email" type="email" required aria-required="true" autocomplete="email" placeholder="rony@example.in"/></div>
+          <div class="field c-5"><label for="ck-phone">Phone (10 digits) ${req}</label><input id="ck-phone" type="tel" required aria-required="true" pattern="[0-9]{10}" maxlength="10" autocomplete="tel" placeholder="9876543210"/></div>
         </div>
       </div>
       <div class="field-group">
         <h3>${esc(C.sections.address)}</h3>
         <div class="form-grid">
           <div class="field full"><label for="ck-line1">Address line 1 ${req}</label><input id="ck-line1" type="text" required aria-required="true" autocomplete="address-line1" placeholder="Door no., street"/></div>
-          <div class="field full"><label for="ck-line2">Address line 2 <span class="opt">(optional)</span></label><input id="ck-line2" type="text" autocomplete="address-line2" placeholder="Apartment, landmark"/></div>
-          <div class="field"><label for="ck-pin">Pincode ${req}</label><input id="ck-pin" type="text" required aria-required="true" pattern="[0-9]{6}" maxlength="6" autocomplete="postal-code" placeholder="686001"/></div>
-          <div class="field"><label for="ck-country">Country ${req}</label><input id="ck-country" type="text" required aria-required="true" autocomplete="country-name" value="India" readonly/></div>
-          <div class="field"><label for="ck-city">City ${req}</label><input id="ck-city" type="text" required aria-required="true" autocomplete="address-level2" placeholder="Auto-filled from pincode"/></div>
-          <div class="field"><label for="ck-state">State ${req}</label><input id="ck-state" type="text" required aria-required="true" autocomplete="address-level1" placeholder="Auto-filled from pincode"/></div>
+          <div class="field c-8"><label for="ck-line2">Address line 2 <span class="opt">(optional)</span></label><input id="ck-line2" type="text" autocomplete="address-line2" placeholder="Apartment, landmark"/></div>
+          <div class="field c-4"><label for="ck-pin">Pincode ${req}</label><input id="ck-pin" type="text" required aria-required="true" pattern="[0-9]{6}" maxlength="6" autocomplete="postal-code" placeholder="686001"/></div>
+          <div class="field c-3"><label for="ck-village">Village <span class="opt">(optional)</span></label><input id="ck-village" type="text" autocomplete="address-level3" placeholder="Village or locality"/></div>
+          <div class="field c-3"><label for="ck-city">Town / City ${req}</label><input id="ck-city" type="text" required aria-required="true" autocomplete="address-level2" placeholder="Auto-filled from pincode"/></div>
+          <div class="field c-3"><label for="ck-state">State ${req}</label><input id="ck-state" type="text" required aria-required="true" autocomplete="address-level1" placeholder="Auto-filled from pincode"/></div>
+          <div class="field c-3"><label for="ck-country">Country ${req}</label><input id="ck-country" type="text" required aria-required="true" autocomplete="country-name" value="India" readonly/></div>
         </div>
       </div>
       <div class="field-group">
@@ -107,17 +118,20 @@
   ).join('');
 
   async function renderSummary(pincode) {
-    const c = await DataService.getHydratedCart(pincode);
-    const zoneNote = c.zone ? '<div class="zone">Zone: ' + esc(c.zone.label) + '</div>' : '';
+    const validPin = String(pincode || '').replace(/\D/g, '').length === 6;
+    const c = await DataService.getHydratedCart(validPin ? pincode : '');
+    const shipDisplay = !validPin
+      ? '<span style="opacity:.7;">Enter pincode</span>'
+      : (c.shipping === 0 ? 'Free' : Nazrani.rupee(c.shipping));
+    const totalDisplay = validPin ? Nazrani.rupee(c.total) : Nazrani.rupee(c.subtotal);
     summary.innerHTML = `
       <h3>${esc(C.summaryTitle)}</h3>
       ${lineRows}
       <div class="row"><span>Subtotal</span><span>${Nazrani.rupee(c.subtotal)}</span></div>
-      <div class="row"><span>Shipping</span><span>${c.shipping === 0 ? 'Free' : Nazrani.rupee(c.shipping)}</span></div>
-      ${zoneNote}
-      <div class="row bold"><span>Total</span><span class="v">${Nazrani.rupee(c.total)}</span></div>
+      <div class="row"><span>Shipping</span><span>${shipDisplay}</span></div>
+      <div class="row bold"><span>Total</span><span class="v">${totalDisplay}</span></div>
       <button class="checkout-btn" id="place-order" type="button">${esc(C.submitLabel)}</button>
-      <div class="note">${esc(C.dispatch)}<br/>${esc(C.delivery)}</div>`;
+      <div class="note">${esc(DATA.copy.pages.cart.taxNote)}<br/>${esc(C.dispatch)}</div>`;
     document.getElementById('place-order').addEventListener('click', placeOrder);
   }
   await renderSummary('');
@@ -130,11 +144,12 @@
     setVal('ck-phone', user.phone);
   }
   if (user.address) {
-    setVal('ck-line1', user.address.line1);
-    setVal('ck-line2', user.address.line2);
-    setVal('ck-pin',   user.address.pincode);
-    setVal('ck-city',  user.address.city);
-    setVal('ck-state', user.address.state);
+    setVal('ck-line1',   user.address.line1);
+    setVal('ck-line2',   user.address.line2);
+    setVal('ck-pin',     user.address.pincode);
+    setVal('ck-village', user.address.village);
+    setVal('ck-city',    user.address.city);
+    setVal('ck-state',   user.address.state);
     if (user.address.pincode) renderSummary(user.address.pincode);
   }
 
@@ -204,6 +219,7 @@
       address: {
         line1:   document.getElementById('ck-line1').value,
         line2:   document.getElementById('ck-line2').value,
+        village: document.getElementById('ck-village').value,
         city:    document.getElementById('ck-city').value,
         state:   document.getElementById('ck-state').value,
         pincode: document.getElementById('ck-pin').value,

@@ -22,6 +22,12 @@
   <section class="standard" style="padding:60px 0;" aria-labelledby="onb-title">
     <div class="container" id="onboarding"></div>
   </section>
+  <section class="categories" aria-label="Continue exploring">
+    <div class="container">
+      <div class="head" id="docs-next-head"></div>
+      <div class="cat-grid" id="docs-next-grid"></div>
+    </div>
+  </section>
 </main>
 
 <div id="app-footer"></div>
@@ -108,6 +114,8 @@
         <div><div class="t">${esc(s.t)}</div><div class="d">${esc(s.d)}</div></div>
       </li>`).join('')}
     </ol>`;
+
+  Nazrani.renderDocsContinue('origins');
 })();
 </script>
 </body>
