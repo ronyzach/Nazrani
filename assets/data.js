@@ -167,13 +167,13 @@
             titleA:      'What we sell,',
             titleB:      'we serve',
             titleC:      ' at our own table.',
-            lede:        'Single-origin spices, grains, and Ayurveda from the hills of Kerala — grown organically, traced to the village, and held to a merchant standard older than any certification. So what reaches your table is food at its fullest — full of flavour, full of nutrition, and safe enough for the people you love most.',
+            lede:        'Aromatic spices, wholesome grains, Ayurvedic herbs, and sun-ripened fruits from the hills of Kerala — grown the natural way, traced back to the farm and family who raised them, and held to a merchant standard older than any certification. What reaches your table is food at its fullest — full of flavour, full of nutrition, and safe enough for the people you love most.',
             ctaPrimary:  { label: 'Shop the catalogue →', href: 'shop.html' },
             ctaGhost:    { label: 'Read the Standard',    href: 'standard.html' },
             trust: [
-              { n: 'No.01', l: 'Single, named\norigin per SKU' },
-              { n: 'No.02', l: 'No synthetic\npesticides, ever' },
-              { n: 'No.03', l: 'Fair prices paid\ndirect to growers' }
+              { n: 'No.01', l: 'Guided by Ayurveda,\ngrown by nature' },
+              { n: 'No.02', l: 'Chemical-free.\nSustainably grown' },
+              { n: 'No.03', l: 'Every farmer paid fairly,\nevery time' }
             ],
             card: {
               image:   'assets/images/family-lunch.png',

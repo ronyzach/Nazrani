@@ -267,6 +267,19 @@
 
   // -------------------------------------------------------- product card UI
   /**
+   * Two-word descriptor shown on product cards in place of the raw lot code.
+   */
+  function lotLabel(p) {
+    const map = {
+      'Spices':       'Fresh harvest',
+      'Staples':      'New crop',
+      'Ayurveda':     'Slow-made',
+      'Health Foods': 'Stone-ground'
+    };
+    return map[p.category] || 'Fresh batch';
+  }
+
+  /**
    * HTML for a single product card. Used by featured (home) + shop grid + related.
    */
   function productCardHTML(p) {
@@ -281,7 +294,7 @@
     return ''
       + '<a href="product.html?id=' + p.id + '" class="product-card" data-pid="' + p.id + '">'
       +   '<div class="lot-strip">'
-      +     '<span>LOT · ' + esc(p.lot) + '</span>'
+      +     '<span>' + esc(lotLabel(p)) + '</span>'
       +     '<span class="stock">● in stock</span>'
       +   '</div>'
       +   '<div class="img-wrap">'

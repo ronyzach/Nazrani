@@ -12,6 +12,9 @@
 .donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; color:var(--ink-muted); text-align:center; }
 .donut-center strong { font-size:18px; color:var(--ink); display:block; }
 .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.chart-toggle-group { display:inline-flex; border:1px solid var(--border-strong); border-radius:var(--radius); overflow:hidden; background:#fff; }
+.chart-type-btn { font-size:11px; font-weight:600; padding:4px 12px; border:none; cursor:pointer; background:transparent; color:var(--ink-muted); transition:background 140ms,color 140ms; }
+.chart-type-btn.active { background:var(--green); color:#fff; }
 </style>
 </head>
 <body>
@@ -37,15 +40,27 @@
       <!-- Revenue trend + Category split -->
       <div class="two-col" style="margin-bottom:20px;">
         <div class="card">
-          <div class="card-header"><h2>Revenue by Month</h2></div>
-          <div class="card-body">
-            <div class="bar-chart" id="rev-chart" style="height:160px;"></div>
+          <div class="card-header">
+            <h2>Revenue by Month</h2>
+            <div class="chart-toggle-group" data-chart="rev">
+              <button class="chart-type-btn active" data-type="line">Line</button>
+              <button class="chart-type-btn" data-type="bar">Bar</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:12px 16px 16px;">
+            <div id="rev-chart" style="width:100%;"></div>
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><h2>Orders by Month</h2></div>
-          <div class="card-body">
-            <div class="bar-chart" id="ord-chart" style="height:160px;"></div>
+          <div class="card-header">
+            <h2>Orders by Month</h2>
+            <div class="chart-toggle-group" data-chart="ord">
+              <button class="chart-type-btn active" data-type="line">Line</button>
+              <button class="chart-type-btn" data-type="bar">Bar</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:12px 16px 16px;">
+            <div id="ord-chart" style="width:100%;"></div>
           </div>
         </div>
       </div>
@@ -90,6 +105,80 @@ const rupee = Admin.rupee, esc = Admin.esc, fmtDate = Admin.fmtDate;
 const ORDERS_KEY = 'nazrani:orders:v1';
 const CAT_COLORS = { Spices:'#2c5239', Staples:'#a88a4a', Ayurveda:'#1a5276', 'Health Foods':'#7d3c98' };
 
+// ── Chart state ────────────────────────────────────────────────────────────
+var chartState = { rev: { type:'line', months:[], values:[], color:'#2c5239', fmt: rupee },
+                   ord: { type:'line', months:[], values:[], color:'#a88a4a', fmt: function(v){ return v; } } };
+
+function drawSvgLine(container, months, values, color, fmt) {
+  var W = container.clientWidth || 460;
+  var H = 180, padL=8, padR=8, padT=34, padB=28;
+  var cW=W-padL-padR, cH=H-padT-padB, n=values.length;
+  var maxVal = Math.max.apply(null,values)||1;
+  var xs = values.map(function(_,i){ return padL+(n===1?cW/2:(i/(n-1))*cW); });
+  var ys = values.map(function(v){ return padT+(1-v/maxVal)*cH; });
+  function pathD(xs,ys){
+    var d='M '+xs[0]+' '+ys[0];
+    for(var i=1;i<xs.length;i++){ var cx=(xs[i-1]+xs[i])/2; d+=' C '+cx+' '+ys[i-1]+' '+cx+' '+ys[i]+' '+xs[i]+' '+ys[i]; }
+    return d;
+  }
+  var lp=pathD(xs,ys);
+  var ap=lp+' L '+xs[n-1]+' '+(padT+cH)+' L '+xs[0]+' '+(padT+cH)+' Z';
+  var grid=[0.25,0.5,0.75].map(function(f){
+    var gy=padT+(1-f)*cH;
+    return '<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#e8eae8" stroke-width="1" stroke-dasharray="3 3"/>';
+  }).join('');
+  var dots=values.map(function(v,i){
+    var x=xs[i],y=ys[i],lbl=v?fmt(v):'',ly=y-10;
+    if(ly<10) ly=y+18;
+    return '<circle cx="'+x+'" cy="'+y+'" r="4" fill="'+color+'" stroke="#fff" stroke-width="2"/>'
+      +(lbl?'<text x="'+x+'" y="'+ly+'" font-size="9" fill="'+color+'" text-anchor="middle" font-weight="600">'+lbl+'</text>':'');
+  }).join('');
+  var labels=months.map(function(m,i){
+    return '<text x="'+xs[i]+'" y="'+(H-4)+'" font-size="9" fill="#888" text-anchor="middle">'+m.label+'</text>';
+  }).join('');
+  container.innerHTML='<svg width="100%" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;">'
+    +'<defs><linearGradient id="g'+color.replace('#','')+'" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="'+color+'" stop-opacity="0.18"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0.01"/>'
+    +'</linearGradient></defs>'
+    +grid
+    +'<path d="'+ap+'" fill="url(#g'+color.replace('#','')+')"/>'
+    +'<path d="'+lp+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    +dots+labels+'</svg>';
+}
+
+function drawBarChart(container, months, values, color, fmt) {
+  var maxVal=Math.max.apply(null,values)||1;
+  container.innerHTML='<div class="bar-chart" style="height:160px;padding:0 4px;">'
+    +values.map(function(v,i){
+      var pct=Math.round(v/maxVal*100);
+      return '<div class="bar-col"><div class="bar-val" style="font-size:9px;">'+(v?fmt(v):'')+'</div>'
+        +'<div class="bar" style="height:'+Math.max(pct,2)+'%;background:'+color+';"></div>'
+        +'<div class="bar-label">'+months[i].label+'</div></div>';
+    }).join('')+'</div>';
+}
+
+function drawChart(id) {
+  var s=chartState[id];
+  var el=document.getElementById(id+'-chart');
+  if(!el) return;
+  if(s.type==='line') drawSvgLine(el, s.months, s.values, s.color, s.fmt);
+  else                drawBarChart(el, s.months, s.values, s.color, s.fmt);
+}
+
+// Wire toggles
+document.querySelectorAll('.chart-toggle-group').forEach(function(grp){
+  var id=grp.dataset.chart;
+  grp.querySelectorAll('.chart-type-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      chartState[id].type=btn.dataset.type;
+      grp.querySelectorAll('.chart-type-btn').forEach(function(b){
+        b.classList.toggle('active', b.dataset.type===btn.dataset.type);
+      });
+      drawChart(id);
+    });
+  });
+});
+
 function readOrders() { try{ return JSON.parse(localStorage.getItem(ORDERS_KEY)||'[]'); }catch(_){ return []; } }
 
 function getMonths(n) {
@@ -130,25 +219,17 @@ function render() {
     return orders.filter(function(o){ var d=new Date(o.placed); return d.getMonth()===m.month&&d.getFullYear()===m.year; })
       .reduce(function(s,o){ return s+(o.total||0); },0);
   });
-  const maxRev = Math.max.apply(null,monthRev)||1;
-  document.getElementById('rev-chart').innerHTML = monthRev.map(function(v,i){
-    var pct=Math.round(v/maxRev*100);
-    return '<div class="bar-col"><div class="bar-val" style="font-size:9px;">'+(v?rupee(v):'')+'</div>'
-      +'<div class="bar" style="height:'+Math.max(pct,2)+'%;background:var(--green);"></div>'
-      +'<div class="bar-label">'+months[i].label+'</div></div>';
-  }).join('');
+  chartState.rev.months = months;
+  chartState.rev.values = monthRev;
+  drawChart('rev');
 
   // Monthly order count chart
   const monthOrd = months.map(function(m){
     return orders.filter(function(o){ var d=new Date(o.placed); return d.getMonth()===m.month&&d.getFullYear()===m.year; }).length;
   });
-  const maxOrd = Math.max.apply(null,monthOrd)||1;
-  document.getElementById('ord-chart').innerHTML = monthOrd.map(function(v,i){
-    var pct=Math.round(v/maxOrd*100);
-    return '<div class="bar-col"><div class="bar-val" style="font-size:9px;">'+(v||'')+'</div>'
-      +'<div class="bar" style="height:'+Math.max(pct,2)+'%;background:var(--gold);"></div>'
-      +'<div class="bar-label">'+months[i].label+'</div></div>';
-  }).join('');
+  chartState.ord.months = months;
+  chartState.ord.values = monthOrd;
+  drawChart('ord');
 
   // Top products
   const prodRev = {};

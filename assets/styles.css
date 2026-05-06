@@ -342,6 +342,7 @@ button { font-family: inherit; }
   line-height: 1.05; margin: 16px 0 22px; letter-spacing: -0.01em;
 }
 .hero h1 .accent { color: var(--gold-soft); }
+.hero h1 .hero-line2 { font-size: 0.72em; display: block; }
 .hero p.lede {
   font-size: 14px; line-height: 1.7; max-width: 460px;
   color: rgba(246,242,231,0.82); margin-bottom: 28px;
