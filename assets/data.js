@@ -239,7 +239,7 @@
           },
           founder: {
             eyebrow:  'Part II · A Note from the Founder',
-            quote:    'Every jar that carries the Nazrani name carries three promises: the produce is grown without chemical shortcuts, the people who grew it are paid honestly, and the land is in better health next season than this one. What reaches your table is food in its honest form — the taste God intended, the nutrition the plant produced, nothing stripped away, nothing added. <span class="serif-i">Food that nourishes both body and soul.</span>',
+            quote:    'Every jar that carries the Nazrani name carries three promises: the produce is grown without chemical shortcuts, the people who grew it are paid honestly, and the land is in better health next season than this one. What reaches your table is food in its honest form — the taste God intended, the nutrition the plant produced, nothing stripped away, nothing added. <span class="serif-i">Food that nourishes both body and soul.</span> This is the gold standard the Nazrani name has carried for centuries — quality without compromise, integrity beyond question — and the only standard worthy of carrying it forward.',
             avatar:   'assets/images/founder-rony.png',
             avatarAlt: 'Rony Zachariah, Founder of Nazrani Heritage',
             name:     'Rony Zachariah',
