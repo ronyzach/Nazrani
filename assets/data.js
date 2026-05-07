@@ -295,9 +295,9 @@
             ],
             vignette: {
               eyebrow: 'A short story from the archive',
-              place:   'Quilon · 849 AD',
-              title:   'Three faiths, one set of weights.',
-              body:    'The Tharisapalli copper plates — among the earliest written records of organised trade in Kerala — preserve a remarkable arrangement. The local ruler granted a Nazrani merchant, Mar Sapir Iso, formal market rights and tax privileges at the port of Quilon. The grant was witnessed and co-signed by representatives of the Jewish and Muslim merchant guilds of the same port. One ledger of trust, shared across three communities. The plates survive to this day in church archives in Kerala — one of the most striking documents of inter-communal commerce in the medieval world.'
+              place:   'Cranganore · c. 1000 AD',
+              title:   'The two copper plates.',
+              body:    'For a thousand years, the port of Cranganore — ancient Muziris — was the busiest spice market in Asia. Two of its merchant communities sat at the heart of that trade: the Cochin Jews, whose forebears had arrived in the time of King Solomon, and the Nazranis, whose church at Cranganore was nearly as old. Around 849 AD the local sovereign granted the Nazrani merchant Mar Sapir Iso formal market privileges, inscribed on copper and witnessed by Jewish and Muslim merchant guilds. A century and a half later the same court granted Joseph Rabban, leader of the Cochin Jews, a parallel set of privileges on a second copper plate. Both plates survive to this day. Both record, in the same legal language, the same idea — that a market is held together not by the ruler\'s seal, but by the trust between the merchants who work in it.'
             },
             paragraphsAfter: [
               'By the time Vasco da Gama reached Calicut in 1498, the Nazranis had been part of this maritime trade for fourteen centuries. The Portuguese — and after them the Dutch and the English — found a community already fluent in the rhythms of long-distance commerce: standardised weights, sealed sacks, written manifests, and a memory of fair price stretching back generations.',
