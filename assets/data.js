@@ -202,7 +202,7 @@
             ],
             lede:      'For centuries, Nazranis were recognised as a distinct merchant class by overseas traders — Jewish, Arab, and later European — drawn to their reputation for <span class="serif-i">intelligence, honesty, and professional integrity.</span>',
             paragraphs: [
-              'In a coastal society organised by caste, the Nazranis were one of the few groups who could move freely between communities — buying pepper and cardamom in upland villages where outsiders were not welcome, weighing it in the seller\'s presence, and carrying it down to the ports of Cochin and Quilon for Arab, Jewish, and European merchants bound for Rome, Alexandria, and Venice. A sack of pepper sold by a Nazrani contained exactly what the Nazrani said it did — and that, for a thousand years, was enough.',
+              'In a coastal society organised by caste, almost no one could move freely between communities — Hindus did not cross the seas, foreign merchants could not enter the inland forests, tribal cultivators would not come down to the coast. The Nazranis were one of the few groups who could move between all three. A sack of pepper sold by a Nazrani contained exactly what the Nazrani said it did — and that, for a thousand years, was enough.',
               'The world has changed since. The value at the heart of that reputation has not.'
             ],
             cta: { label: 'Read the full heritage →', href: 'article.html?slug=name-worth-keeping' }
