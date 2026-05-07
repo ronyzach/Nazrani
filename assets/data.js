@@ -278,6 +278,32 @@
           titleA: 'A name carried ',
           titleB: 'across centuries.',
           lede:   'Nazrani is a merchant tradition from the Malabar coast — recognised for centuries by overseas traders for honest weights, fair description, and trusted intermediation. Nazrani Heritage is its modern continuation as a single-origin produce house.',
+          story: {
+            eyebrow:   'Part I · The Name',
+            titleA:    'The meaning of ',
+            titleB:    'Nazrani.',
+            timeline:  '52 AD ────────── PRESENT',
+            tags: [
+              { tone: 'green', label: 'Malabar Coast' },
+              { tone: 'green', label: 'Merchant Class' },
+              { tone: 'gold',  label: 'Honest Weights' }
+            ],
+            lede: 'For nearly two thousand years, the Malabar coast has been one of the world\'s great meeting grounds — a narrow strip of land where the monsoon brought Arab dhows in summer and carried them home in winter, and where Jewish, Persian, Christian, and later European merchants sat at the same wharves trading in pepper, cardamom, and cinnamon. The <span class="serif-i">Nazranis</span> were among the oldest of the coast\'s merchant communities.',
+            paragraphs: [
+              'The name itself carries the trade. Nazrani — from Nazarene, follower of Jesus of Nazareth — was how the early Persian, Syriac, and Arab traders identified the Christian community they did business with on the Malabar coast. By the time the first Arab geographers were writing about Kerala in the 9th century, the term was already a commercial designation as much as a religious one, tied to a specific role in the spice economy.',
+              'What set the Nazranis apart was not faith but function. In a coastal society organised by caste, they occupied a particular niche — among the few groups who could move freely across communities. They bought from upland cultivators who would not trade directly with foreigners, and sold to Arab, Jewish, and Chinese merchants who could not enter inland markets. They were, in the truest sense of the word, intermediaries — and their reputation for fair dealing was the only credential that made the role possible.'
+            ],
+            vignette: {
+              eyebrow: 'A short story from the archive',
+              place:   'Quilon · 849 AD',
+              title:   'Three faiths, one set of weights.',
+              body:    'The Tharisapalli copper plates — among the earliest written records of organised trade in Kerala — preserve a remarkable arrangement. The local ruler granted a Nazrani merchant, Mar Sapir Iso, formal market rights and tax privileges at the port of Quilon. The grant was witnessed and co-signed by representatives of the Jewish and Muslim merchant guilds of the same port. One ledger of trust, shared across three communities. The plates survive to this day in church archives in Kerala — one of the most striking documents of inter-communal commerce in the medieval world.'
+            },
+            paragraphsAfter: [
+              'By the time Vasco da Gama reached Calicut in 1498, the Nazranis had been part of this maritime trade for fourteen centuries. The Portuguese — and after them the Dutch and the English — found a community already fluent in the rhythms of long-distance commerce: standardised weights, sealed sacks, written manifests, and a memory of fair price stretching back generations.',
+              'The world has changed since. Steam replaced sail, the colonial companies came and went, the spice trade industrialised and then commoditised. But the value at the heart of the Nazrani name — that what is sold is exactly what is described, weighed honestly, and grown by people who are paid fairly — has not. Nazrani Heritage exists to carry that value forward, in a market that has largely forgotten it.'
+            ]
+          },
           partners: {
             eyebrow: 'Sourcing Partners',
             titleA:  'The people behind ',

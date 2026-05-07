@@ -56,20 +56,29 @@
     <h1 id="page-title">${esc(A.titleA)}<span class="accent">${esc(A.titleB)}</span></h1>
     <p class="lede">${esc(A.lede)}</p>`;
 
-  // -------- STORY (long form) --------------------------------------------
+  // -------- STORY (long form, about-specific) ----------------------------
+  const S = A.story;
+  const vignetteHTML = S.vignette ? `
+    <aside class="vignette" style="margin:32px 0 8px;padding:28px 28px 24px;background:var(--paper-cool);border-left:2px solid var(--accent);">
+      <div class="eyebrow" style="margin-bottom:10px;">${esc(S.vignette.eyebrow)}</div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:8px;">${esc(S.vignette.place)}</div>
+      <h3 style="font-family:var(--serif);font-weight:500;font-size:24px;line-height:1.2;margin:0 0 14px;">${esc(S.vignette.title)}</h3>
+      <p style="margin:0;">${esc(S.vignette.body)}</p>
+    </aside>` : '';
   document.getElementById('story-grid').innerHTML = `
     <div>
-      <div class="eyebrow">${esc(H.story.eyebrow)}</div>
-      <h2 id="story-title">${esc(H.story.titleA)}<span class="serif-i">${esc(H.story.titleB)}</span></h2>
-      <div class="timeline"><div class="t">${esc(H.story.timeline)}</div></div>
+      <div class="eyebrow">${esc(S.eyebrow)}</div>
+      <h2 id="story-title">${esc(S.titleA)}<span class="serif-i">${esc(S.titleB)}</span></h2>
+      <div class="timeline"><div class="t">${esc(S.timeline)}</div></div>
       <div class="tags">
-        ${H.story.tags.map(t => `<span class="tag tag-${t.tone}">${esc(t.label)}</span>`).join('')}
+        ${S.tags.map(t => `<span class="tag tag-${t.tone}">${esc(t.label)}</span>`).join('')}
       </div>
     </div>
     <div class="col-r">
-      <p class="lede">${H.story.lede}</p>
-      ${H.story.paragraphs.map(p => '<p>' + esc(p) + '</p>').join('')}
-      <a href="${H.story.cta.href}" class="more">${esc(H.story.cta.label)}</a>
+      <p class="lede">${S.lede}</p>
+      ${S.paragraphs.map(p => '<p>' + esc(p) + '</p>').join('')}
+      ${vignetteHTML}
+      ${(S.paragraphsAfter || []).map(p => '<p>' + esc(p) + '</p>').join('')}
     </div>`;
 
   // -------- FOUNDER -------------------------------------------------------
