@@ -288,6 +288,18 @@
               { tone: 'green', label: 'Merchant Class' },
               { tone: 'gold',  label: 'Honest Weights' }
             ],
+            images: [
+              {
+                src:     'assets/images/about-nazrani-family.jpg',
+                alt:     'A multi-generational Nazrani family on the veranda of an ancestral tharavad in Kerala',
+                caption: 'A Nazrani household · Kerala'
+              },
+              {
+                src:     'assets/images/about-merchant-meeting.jpg',
+                alt:     'A Nazrani merchant seated with a Jewish trader, an Arab trader, and a European merchant',
+                caption: 'The merchants of the Malabar coast'
+              }
+            ],
             lede: 'For nearly two thousand years, the Malabar coast has been one of the world\'s great meeting grounds — a narrow strip of land where the monsoon brought Arab dhows in summer and carried them home in winter, and where Jewish, Persian, Christian, and later European merchants sat at the same wharves trading in pepper, cardamom, and cinnamon. The <span class="serif-i">Nazranis</span> were among the oldest of the coast\'s merchant communities.',
             paragraphs: [
               'The name itself carries the trade. Nazrani — from Nazarene, follower of Jesus of Nazareth — was how the early Persian, Syriac, and Arab traders identified the Christian community they did business with on the Malabar coast. By the time the first Arab geographers were writing about Kerala in the 9th century, the term was already a commercial designation as much as a religious one, tied to a specific role in the spice economy.',
