@@ -200,10 +200,11 @@
               { tone: 'green', label: 'Merchant Class' },
               { tone: 'gold',  label: 'Honest Weights' }
             ],
-            lede:      'For centuries, Nazranis were recognised as a distinct merchant class by overseas traders — Jewish, Arab, and later European — drawn to their reputation for <span class="serif-i">intelligence, honesty, and professional integrity.</span>',
+            lede:      'When St. Thomas, one of Jesus Christ\'s apostles, arrived on the shores of Kerala in AD 52, he spoke of a God who created the heavens and the earth — and of a way of life rooted in <span class="serif-i">honesty, integrity, humility, and faith.</span>',
             paragraphs: [
-              'In a coastal society organised by caste, almost no one could move freely between communities — Hindus did not cross the seas, foreign merchants could not enter the inland forests, tribal cultivators would not come down to the coast. The Nazranis were one of the few groups who could move between all three. A sack of pepper sold by a Nazrani contained exactly what the Nazrani said it did — and that, for a thousand years, was enough.',
-              'The world has changed since. The value at the heart of that reputation has not.'
+              'A few natives were drawn to this message. They embraced these teachings, and the change in them was visible in how they lived and traded — fair in their dealings, humble in their conduct, steady in their word.',
+              'The resident Jewish community, watching closely, began calling these followers Nazranis — after Jesus, the man from Nazareth, whose teachings had so clearly shaped them. The name stuck.',
+              'In time, the Nazranis became trusted trading partners of the Jews and the spice producers of the Malabar hills. Even today, Malayalee Christians across Kerala and India are known as Nazranis — a community still recognised for the values that earned them the name.'
             ],
             cta: { label: 'Read the full heritage →', href: 'article.html?slug=name-worth-keeping' }
           },
