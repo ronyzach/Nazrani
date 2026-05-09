@@ -80,14 +80,18 @@
   // -------- STORY (short teaser; full story lives on about.html) ----------
   document.getElementById('story-grid').innerHTML = `
     <div>
-      <div class="eyebrow">${esc(C.story.eyebrow)}</div>
-      <h2 id="story-title">${esc(C.story.titleA)}<span class="serif-i">${esc(C.story.titleB)}</span></h2>
-      <div class="timeline"><div class="t">${esc(C.story.timeline)}</div></div>
+      <figure style="margin:0;">
+        <img src="assets/images/home-spice-merchant.jpg?v=1" alt="A Nazrani spice merchant at his desk with brass scales, ledger, and sacks of pepper and cardamom at Kerala Spices Trading Co." loading="lazy" style="width:100%;height:auto;display:block;border:1px solid var(--rule);"/>
+        <figcaption style="font-family:var(--mono);font-size:10px;letter-spacing:0.14em;color:var(--ink-muted);text-transform:uppercase;margin-top:10px;">Brass scales, an open ledger · the merchant's desk</figcaption>
+      </figure>
+      <div class="timeline" style="margin-top:32px;"><div class="t">${esc(C.story.timeline)}</div></div>
       <div class="tags">
         ${C.story.tags.map(t => `<span class="tag tag-${t.tone}">${esc(t.label)}</span>`).join('')}
       </div>
     </div>
     <div class="col-r">
+      <div class="eyebrow">${esc(C.story.eyebrow)}</div>
+      <h2 id="story-title">${esc(C.story.titleA)}<span class="serif-i">${esc(C.story.titleB)}</span></h2>
       <p class="lede">${C.story.lede}</p>
       ${C.story.paragraphs.map(p => '<p>' + esc(p) + '</p>').join('')}
       <a href="about.html" class="more">Read our full story →</a>
