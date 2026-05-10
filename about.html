@@ -69,11 +69,16 @@
     <div>
       <div class="eyebrow">${esc(S.eyebrow)}</div>
       <h2 id="story-title">${esc(S.titleA)}<span class="serif-i">${esc(S.titleB)}</span></h2>
+      ${S.subtitle ? `<p class="story-subtitle" style="font-family:var(--serif);font-style:italic;font-size:20px;line-height:1.4;color:var(--ink-muted);margin:-4px 0 18px;">${esc(S.subtitle)}</p>` : ''}
       <div class="timeline"><div class="t">${esc(S.timeline)}</div></div>
       <div class="tags">
         ${S.tags.map(t => `<span class="tag tag-${t.tone}">${esc(t.label)}</span>`).join('')}
       </div>
       <figure style="margin:32px 0 0;">
+        <img src="assets/images/about-malabar-map.jpg?v=1" alt="Outline map of India highlighting Kerala and the Malabar Coast on the south-western shore" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid var(--rule);"/>
+        <figcaption style="font-family:var(--mono);font-size:10px;letter-spacing:0.14em;color:var(--ink-muted);text-transform:uppercase;margin-top:10px;">The Malabar Coast · today's Kerala</figcaption>
+      </figure>
+      <figure style="margin:24px 0 0;">
         <img src="assets/images/about-nazrani-family.jpg?v=1" alt="A multi-generational Nazrani family on the veranda of an ancestral tharavad in Kerala" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid var(--rule);"/>
         <figcaption style="font-family:var(--mono);font-size:10px;letter-spacing:0.14em;color:var(--ink-muted);text-transform:uppercase;margin-top:10px;">A Nazrani household · Kerala</figcaption>
       </figure>

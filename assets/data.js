@@ -204,7 +204,8 @@
             paragraphs: [
               'A few natives were drawn to this message. They embraced these teachings, and the change in them was visible in how they lived and traded — fair in their dealings, humble in their conduct, steady in their word.',
               'The resident Jewish community, watching closely, began calling these followers Nazranis — after Jesus, the man from Nazareth, whose teachings had so clearly shaped them. The name stuck.',
-              'In time, the Nazranis became trusted trading partners of the Jews and the spice producers of the Malabar hills. Even today, Malayalee Christians across Kerala and India are known as Nazranis — a community still recognised for the values that earned them the name.'
+              'In time, the Nazranis became trusted trading partners of the Jews and the spice producers of the Malabar hills — a name still carried today by Malayalee Christians across Kerala, recognised for the values that earned it.',
+              'Centuries on, the trade has moved from shopfronts to screens. What hasn\'t moved is the name and what it stands for — honest dealing, fair weight, and spices and produce that reach you the way they always did: natural, organic, wholesome.'
             ],
             cta: { label: 'Read the full heritage →', href: 'article.html?slug=name-worth-keeping' }
           },
@@ -281,8 +282,9 @@
           lede:   'Nazrani is a merchant tradition from the Malabar coast — recognised for centuries by overseas traders for honest weights, fair description, and trusted intermediation. Nazrani Heritage is its modern continuation as a single-origin produce house.',
           story: {
             eyebrow:   'Part I · The Name',
-            titleA:    'The meaning of ',
-            titleB:    'Nazrani.',
+            titleA:    'The Nazranis of ',
+            titleB:    'Malabar.',
+            subtitle:  'A two-thousand-year-old trust.',
             timeline:  '52 AD ────────── PRESENT',
             tags: [
               { tone: 'green', label: 'Malabar Coast' },
